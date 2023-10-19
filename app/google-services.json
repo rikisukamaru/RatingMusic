@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "498631353784",
+    "firebase_url": "https://gammamusic-1d9b4-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "gammamusic-1d9b4",
+    "storage_bucket": "gammamusic-1d9b4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498631353784:android:5fef81646d0411ce79db4d",
+        "android_client_info": {
+          "package_name": "com.gammamusic"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "498631353784-rnfepb0vi9mebv6nvu5e9sgne0c9p7s2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gammamusic",
+            "certificate_hash": "65596562ec48cb5e750a66ccfe24872609ae512c"
+          }
+        },
+        {
+          "client_id": "498631353784-i372154rafibobm9bipfp8dkajnvt3te.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4mPHnv4mT2GTOhWQ9MOKRBr1A4WSm_3s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "498631353784-i372154rafibobm9bipfp8dkajnvt3te.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
