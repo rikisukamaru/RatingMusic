@@ -1,23 +1,16 @@
 package com.gammamusic.ui.screens.MusicPlayer
 
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import retrofit2.Callback
 import com.gammamusic.data.service.ApiService
-import com.gammamusic.domain.model.Track
-import com.google.firebase.BuildConfig
+import com.gammamusic.domain.model.Player.Track
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
-import retrofit2.Call
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

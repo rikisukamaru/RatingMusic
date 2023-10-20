@@ -1,8 +1,8 @@
 package com.gammamusic.data.model
 
-import Search
+import com.gammamusic.domain.model.Search.Search
 
 
 data class SearchListResponse(
-    val artists: List<Search>
+    val data: List<Search>
 )

@@ -1,6 +1,6 @@
 package com.gammamusic.data.service
 
-import com.gammamusic.domain.model.Track
+import com.gammamusic.domain.model.Player.Track
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Header

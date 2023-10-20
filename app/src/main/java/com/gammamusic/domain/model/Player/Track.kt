@@ -1,4 +1,7 @@
-package com.gammamusic.domain.model
+package com.gammamusic.domain.model.Player
+
+import com.gammamusic.domain.model.Player.Album
+import com.gammamusic.domain.model.Player.Artist
 
 data class Track (
     val id: Int,

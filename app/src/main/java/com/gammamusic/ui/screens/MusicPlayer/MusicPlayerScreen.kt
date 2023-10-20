@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -31,10 +30,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.AlertDialogDefaults.shape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
-import com.gammamusic.domain.model.Track
+import com.gammamusic.domain.model.Player.Track
 import kotlinx.coroutines.launch
 
 @Preview
@@ -69,7 +66,7 @@ fun MusicPlayerScreen() {
     var isPlaying by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        trackViewModel.getTrack(345311)
+        trackViewModel.getTrack(1735625677)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
