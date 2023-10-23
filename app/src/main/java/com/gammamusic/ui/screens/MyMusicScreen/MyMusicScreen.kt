@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +32,8 @@ import com.example.freelis.ui.screens.MyMusicScreen.MyMusicViewModel
 import com.gammamusic.domain.model.Player.Track
 import com.gammamusic.domain.model.Search.Search
 import com.gammamusic.ui.navigation.MainNavigation.ScreensInMyMusic
-
+import com.gammamusic.ui.screens.MusicPlayer.MusicPlayerScreen
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,13 +43,17 @@ fun MyMusicScreen(
     viewModel: MyMusicViewModel =  androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     var searchText by remember { mutableStateOf("") }
-
+    var isPlayerVisible by remember { mutableStateOf(false) }
+    var trackId by remember{
+        mutableStateOf(0L)
+    }
     val searchState by remember { viewModel.searchLiveData }.observeAsState(emptyList())
 
-    Column (modifier = Modifier
-        .fillMaxSize()
-        .background(Color.Black)
-            ){
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
         //Апи на поиск по артисту
         Column {
             TextField(
@@ -56,7 +62,7 @@ fun MyMusicScreen(
                     searchText = newText
                     viewModel.searchQuery.value = newText
                     if (newText.isBlank()) {
-                        viewModel.clearSearchResults() // Добавьте эту строку для очистки результатов поиска
+                        viewModel.clearSearchResults()
                     } else {
                         viewModel.search(newText)
                     }
@@ -66,13 +72,17 @@ fun MyMusicScreen(
             )
 
             LazyColumn {
-                items(searchState){item: Search ->
-                    Card(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 5.dp)
-                        .height(30.dp)
-                        .background(Color.White)) {
+                items(searchState) { item: Search ->
+                    Card(onClick = { isPlayerVisible = true
+                                   trackId = item.id},
+                         modifier = Modifier
+                             .fillMaxWidth()
+                             .padding(bottom = 5.dp)
+                             .height(30.dp)
+                             .background(Color.White)
+                    ) {
                         Text(text = item.title)
+
                     }
 
                 }
@@ -81,42 +91,46 @@ fun MyMusicScreen(
 
 
 
-                Button(
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(Color.White),
-                    modifier = Modifier.padding(5.dp),
-                    onClick = {
-                        navController.navigate(ScreensInMyMusic.MyMusicCollection.route)
-                    }
-                ) {
-                    Text(
-                        text = "Моя музыкальная коллекция",
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .fillMaxWidth(),
-                        color = Color.Black
-                        )
 
-                }
-                Button(
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(Color.White),
-                    modifier = Modifier.padding(5.dp),
-                    onClick = {
-                        navController.navigate(ScreensInMyMusic.MyPlaylistCollection.route)
-                    }
-                ) {
-                    Text(
-                        text = "Мои плейлисты",
-                        modifier = Modifier
-                            .padding(5.dp)
-                            .fillMaxWidth(),
-                        color = Color.Black
-                    )
+        Button(
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.buttonColors(Color.White),
+            modifier = Modifier.padding(5.dp),
+            onClick = {
+                navController.navigate(ScreensInMyMusic.MyMusicCollection.route)
+            }
+        ) {
+            Text(
+                text = "Моя музыкальная коллекция",
+                modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxWidth(),
+                color = Color.Black
+            )
 
-                }
+        }
+        Button(
+            shape = MaterialTheme.shapes.medium,
+            colors = ButtonDefaults.buttonColors(Color.White),
+            modifier = Modifier.padding(5.dp),
+            onClick = {
+                navController.navigate(ScreensInMyMusic.MyPlaylistCollection.route)
+            }
+        ) {
+            Text(
+                text = "Мои плейлисты",
+                modifier = Modifier
+                    .padding(5.dp)
+                    .fillMaxWidth(),
+                color = Color.Black
+            )
+
+        }
 
     }
-
+    if (isPlayerVisible) {
+        MusicPlayerScreen(id = trackId)
+    }
 }
+
 

@@ -1,5 +1,6 @@
 package com.gammamusic.ui.screens.MusicPlayer
 
+import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -55,18 +56,18 @@ import coil.compose.rememberAsyncImagePainter
 import com.gammamusic.domain.model.Player.Track
 import kotlinx.coroutines.launch
 
-@Preview
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MusicPlayerScreen() {
+fun MusicPlayerScreen(id:Long) {
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val trackViewModel: TrackViewModel = viewModel()
     val trackState: Track? by trackViewModel.trackLiveData.observeAsState()
     var isPlaying by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        trackViewModel.getTrack(1735625677)
+    LaunchedEffect(id) {
+        trackViewModel.getTrack(id)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {

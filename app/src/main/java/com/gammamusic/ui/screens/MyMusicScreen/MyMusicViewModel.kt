@@ -23,6 +23,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class MyMusicViewModel : ViewModel() {
     private val apiService: ApiService
+
     val searchQuery = MutableStateFlow("")
     init {
         val apikey = com.gammamusic.BuildConfig.KEY
@@ -65,7 +66,7 @@ class MyMusicViewModel : ViewModel() {
                 return@launch
             }
         }catch(e: Exception) {
-            Log.e("xcv",e.message.toString())
+
         }
         try {
             val response = apiService.getSearch(nameArtist)

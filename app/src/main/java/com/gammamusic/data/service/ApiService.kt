@@ -10,7 +10,7 @@ import retrofit2.http.Query
 interface ApiService {
 
     @GET("track/{id}")
-    suspend fun getTrack(@Path("id") id: Int): Response<Track>
+    suspend fun getTrack(@Path("id") id: Long): Response<Track>
     @GET("search")
     suspend fun getSearch(@Query("q") name:String):Response<SearchListResponse>
 }

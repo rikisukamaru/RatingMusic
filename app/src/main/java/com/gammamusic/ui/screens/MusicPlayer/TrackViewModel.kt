@@ -74,7 +74,7 @@ class TrackViewModel : ViewModel() {
     }
 
 
-    fun getTrack(id: Int) {
+    fun getTrack(id: Long) {
         viewModelScope.launch {
             try {
                 val response = apiService.getTrack(id)
@@ -86,7 +86,7 @@ class TrackViewModel : ViewModel() {
                     // Обработка ошибки
                 }
             } catch (e: Exception) {
-               Log.e("xcv",e.message.toString())
+               Log.e("aaaa",e.message.toString())
             }
         }
     }

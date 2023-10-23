@@ -44,7 +44,7 @@ fun NavGraph(navHostController: NavHostController) {
 
 
         }
-        MusicPlayerScreen()
+
     }
 
 }
