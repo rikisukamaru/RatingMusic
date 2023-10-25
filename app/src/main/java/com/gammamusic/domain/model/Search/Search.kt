@@ -1,15 +1,15 @@
 package com.gammamusic.domain.model.Search
 
-import com.gammamusic.data.model.SearchListResponse
 
 data class Search (
 
+    val id: Long= 0L,
 
-    val id: Long,
+    val title: String="",
 
-    val title: String,
-
-    val preview:String
+    val preview:String=""
 
 
-)
+){
+    constructor() : this(0L, "")
+}

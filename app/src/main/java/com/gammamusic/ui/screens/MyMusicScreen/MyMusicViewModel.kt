@@ -8,7 +8,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gammamusic.data.service.ApiService
-import com.gammamusic.domain.model.Player.Track
+
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -21,7 +23,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-class MyMusicViewModel : ViewModel() {
+class MyMusicViewModel() : ViewModel() {
     private val apiService: ApiService
 
     val searchQuery = MutableStateFlow("")
@@ -46,7 +48,7 @@ class MyMusicViewModel : ViewModel() {
         apiService = retrofit.create(ApiService::class.java)
         viewModelScope.launch {
             searchQuery
-                .debounce(300) // Задержка в 300 миллисекунд
+                .debounce(700) // Задержка в 300 миллисекунд
                 .filter { it.isNotBlank() } // Игнорировать пустые запросы
                 .distinctUntilChanged() // Игнорировать повторяющиеся запросы
                 .collect { query ->
@@ -58,6 +60,19 @@ class MyMusicViewModel : ViewModel() {
 
     private val _searchLiveData = MutableLiveData<List<Search>>()
     val searchLiveData: LiveData<List<Search>> = _searchLiveData
+    fun addSearchToUserCollection(search: Search) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId == null) {
+            // Показать сообщение об ошибке и прекратить выполнение функции
+            return
+        }
+
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("users").child(userId).child("searches")
+
+        myRef.push().setValue(search)
+    }
+
 
     fun search(nameArtist:String) = viewModelScope.launch {
         try {

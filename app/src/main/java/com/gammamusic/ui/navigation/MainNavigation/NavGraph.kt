@@ -18,11 +18,13 @@ import com.example.freelis.ui.screens.RatingScreen.RatingScreen
 import com.gammamusic.ui.screens.MusicPlayer.MusicPlayerScreen
 
 import com.gammamusic.ui.screens.MyMusicScreen.MyMusicCollection.MyMusicCollection
+import com.gammamusic.ui.screens.MyMusicScreen.MyMusicCollection.MyMusicCollectionViewModel
 
 
 @Composable
 fun NavGraph(navHostController: NavHostController) {
     Box(modifier = Modifier.fillMaxSize()){
+        val myMusicCollectionViewModel = MyMusicCollectionViewModel()
 
         NavHost(navController = navHostController, startDestination = "MyMusic" ){
             composable("MyMusic"){
@@ -35,7 +37,7 @@ fun NavGraph(navHostController: NavHostController) {
                 RatingScreen()
             }
             composable(route = ScreensInMyMusic.MyMusicCollection.route){
-                MyMusicCollection()
+                MyMusicCollection(myMusicCollectionViewModel)
             }
             composable(route = ScreensInMyMusic.MyPlaylistCollection.route){
                 MyPlaylistCollection()
