@@ -1,5 +1,6 @@
 package com.gammamusic.ui.screens.MyMusicScreen.MyMusicCollection
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -9,6 +10,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 
 class MyMusicCollectionViewModel:ViewModel() {
     private val _searches = MutableLiveData<List<Search>>()
@@ -39,4 +42,27 @@ class MyMusicCollectionViewModel:ViewModel() {
             })
         }
     }
+    fun deleteSongFromCollection(songId: Long) {
+        val database = Firebase.database
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val userSearchesRef = database.getReference("users/$userId/searches")
+
+        userSearchesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (searchSnapshot in dataSnapshot.children) {
+                    val songSnapshot = searchSnapshot.child("id")
+                    val songIdValue = songSnapshot.getValue(Long::class.java)
+                    if (songIdValue == songId) {
+                        searchSnapshot.ref.removeValue()
+                        break
+                    }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Обработка ошибки при чтении данных из Firebase
+            }
+        })
+    }
+
 }

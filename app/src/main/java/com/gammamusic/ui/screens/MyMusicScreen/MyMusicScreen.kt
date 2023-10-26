@@ -1,4 +1,5 @@
 package com.gammamusic.ui.screens.MyMusicScreen
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Icon
@@ -32,8 +35,10 @@ import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.freelis.ui.screens.MyMusicScreen.MyMusicViewModel
 
 import com.gammamusic.domain.model.Search.Search
@@ -50,7 +55,7 @@ fun MyMusicScreen(
     navController: NavController,
     viewModel: MyMusicViewModel =  androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-    val myMusicCollectionViewModel = MyMusicCollectionViewModel()
+
 
 
     var searchText by remember { mutableStateOf("") }
@@ -64,6 +69,7 @@ fun MyMusicScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
+            .padding(bottom = 170.dp)
     ) {
         //Апи на поиск по артисту
         Column {
@@ -82,7 +88,7 @@ fun MyMusicScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            LazyColumn {
+            LazyColumn() {
                 items(searchState) { item: Search ->
                     Card(onClick = { isPlayerVisible = true
                                    trackId = item.id},
@@ -91,9 +97,21 @@ fun MyMusicScreen(
                              .padding(bottom = 5.dp)
                              .height(40.dp)
                              .background(Color.White)
-                    ) {
-                        Row(horizontalArrangement = Arrangement.SpaceBetween,modifier = Modifier.fillMaxWidth()) {
-                            Text(text = item.title)
+                    ) {Row(horizontalArrangement = Arrangement.SpaceBetween,modifier = Modifier.fillMaxWidth()) {
+                        Image(
+                        painter = rememberAsyncImagePainter(model = item.album.cover_medium ?:"https://shutniks.com/wp-content/uploads/2020/01/unnamed-2.jpg"),
+                        contentDescription = "avatar",
+                        contentScale = ContentScale.Crop,            // crop the image if it's not a square
+                        modifier = Modifier
+                            .size(40.dp)
+                            .wrapContentSize()   // add a border (optional)
+                    )
+
+                            Column {
+                                Text(text = item.title)
+                                Text(text = item.artist.name)
+                            }
+
                             IconButton(onClick = { viewModel.addSearchToUserCollection(item) }) {
                                 Icon(Icons.Filled.Add, contentDescription = "Добавить в мою коллекцию")
                             }

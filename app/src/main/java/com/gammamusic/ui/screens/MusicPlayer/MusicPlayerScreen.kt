@@ -105,9 +105,7 @@ fun MusicPlayerScreen(id:Long) {
                     Text(trackState?.artist?.name.toString(), Modifier.weight(1f))
                 }
                 Row {
-                    IconButton(onClick = {trackViewModel.play()}) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Воспроизвести")
-                    }
+
                     IconButton(onClick = {
                         isPlaying = !isPlaying
                         if (isPlaying == true)
@@ -121,9 +119,7 @@ fun MusicPlayerScreen(id:Long) {
                         val icon = if (isPlaying) Icons.Filled.Close else Icons.Filled.PlayArrow
                         Icon(icon, contentDescription = if (isPlaying) "Пауза" else "Воспроизвести")
                     }
-                    IconButton(onClick = {trackViewModel.play()}) {
-                        Icon(Icons.Filled.ArrowForward, contentDescription = "Воспроизвести")
-                    }
+
                 }
 
             }

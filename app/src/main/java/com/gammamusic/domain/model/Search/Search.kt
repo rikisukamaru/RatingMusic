@@ -1,5 +1,9 @@
 package com.gammamusic.domain.model.Search
 
+import com.gammamusic.domain.model.Player.Album
+import com.gammamusic.domain.model.Player.Artist
+import com.gammamusic.domain.model.Player.Track
+
 
 data class Search (
 
@@ -7,9 +11,10 @@ data class Search (
 
     val title: String="",
 
-    val preview:String=""
+    val preview:String="",
 
+    val artist: Artist = Artist(),
+    val track: Track = Track(),
+    val album: Album = Album()
 
-){
-    constructor() : this(0L, "")
-}
+)
