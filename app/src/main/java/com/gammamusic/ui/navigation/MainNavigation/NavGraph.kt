@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -19,12 +20,16 @@ import com.gammamusic.ui.screens.MusicPlayer.MusicPlayerScreen
 
 import com.gammamusic.ui.screens.MyMusicScreen.MyMusicCollection.MyMusicCollection
 import com.gammamusic.ui.screens.MyMusicScreen.MyMusicCollection.MyMusicCollectionViewModel
+import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList.PlayListScreen
+import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList.PlayListViewModel
+import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.MyPlaylistCollectionViewModel
 
 
 @Composable
 fun NavGraph(navHostController: NavHostController) {
     Box(modifier = Modifier.fillMaxSize()){
         val myMusicCollectionViewModel = MyMusicCollectionViewModel()
+        val playListViewModel = PlayListViewModel()
 
         NavHost(navController = navHostController, startDestination = "MyMusic" ){
             composable("MyMusic"){
@@ -40,10 +45,13 @@ fun NavGraph(navHostController: NavHostController) {
                 MyMusicCollection(myMusicCollectionViewModel)
             }
             composable(route = ScreensInMyMusic.MyPlaylistCollection.route){
-                MyPlaylistCollection()
+                MyPlaylistCollection(navHostController)
             }
-
-
+            composable("PlayList/{playlistId}") { backStackEntry ->
+                val playlistId = backStackEntry.arguments?.getString("playlistId")
+                // Создайте экземпляр PlayListViewModel и передайте playlistId
+                PlayListScreen(viewModel = playListViewModel, selectedPlaylistId = playlistId.orEmpty())
+            }
 
         }
 

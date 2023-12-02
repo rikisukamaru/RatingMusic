@@ -1,5 +1,6 @@
 package com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,6 +21,7 @@ class MyPlaylistCollectionViewModel: ViewModel() {
 
     private val database = FirebaseDatabase.getInstance()
     private val auth = FirebaseAuth.getInstance()
+
 
     fun createPlaylist(playlistName: String) {
         val currentUser = auth.currentUser
