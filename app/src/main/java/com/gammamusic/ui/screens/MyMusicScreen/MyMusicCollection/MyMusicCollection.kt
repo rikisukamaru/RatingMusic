@@ -45,7 +45,7 @@ import com.gammamusic.ui.screens.MusicPlayer.TrackViewModel
 fun MyMusicCollection(viewModel: MyMusicCollectionViewModel) {
     val searches by viewModel.searches.observeAsState(emptyList())
     var isPlayerVisible by remember { mutableStateOf(false) }
-    isPlayerVisible=true
+
     var trackId by remember{
         mutableStateOf(0L)
     }
@@ -53,6 +53,7 @@ fun MyMusicCollection(viewModel: MyMusicCollectionViewModel) {
     LazyColumn (modifier = Modifier.padding(bottom = 150.dp)){
         itemsIndexed(searches) { index, search ->
             Card(onClick = {
+                isPlayerVisible=true
             trackId = search.id
                 },
                 modifier = Modifier

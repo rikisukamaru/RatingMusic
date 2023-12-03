@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.gammamusic.domain.model.Player.Track
 import com.gammamusic.domain.model.Search.Search
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -16,14 +17,11 @@ import com.google.firebase.ktx.Firebase
 class PlayListViewModel:ViewModel(){
     private val _searches = MutableLiveData<List<Search>>()
     val searches: LiveData<List<Search>> get() = _searches
-    private val _selectedPlaylistId = MutableLiveData<String>()
-    val selectedPlaylistId: LiveData<String> get() = _selectedPlaylistId
+    private val _tracks = MutableLiveData<List<Track>>()
+    val trakes: LiveData<List<Track>> get() = _tracks
 
-    fun selectPlaylist(playlistId: String) {
-        Log.d("PlayListViewModel", "selectPlaylist: $playlistId")
-        _selectedPlaylistId.value = playlistId
-    }
     init {
+
         // Получить данные из Firebase
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
@@ -84,6 +82,30 @@ class PlayListViewModel:ViewModel(){
                 // Обработка ошибки при чтении данных из Firebase
             }
         })
+    }
+    fun loadPlaylist(playlistId: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId != null) {
+            val database = Firebase.database
+            val playlistRef = database.getReference("users/$userId/playlists/$playlistId/tracklist/songs")
+
+            playlistRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val trackList = mutableListOf<Track>()
+                    for (trackSnapshot in dataSnapshot.children) {
+                        val track = trackSnapshot.getValue(Track::class.java)
+                        if (track != null) {
+                            trackList.add(track)
+                        }
+                    }
+                    _tracks.value = trackList
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Обработка ошибки
+                }
+            })
+        }
     }
 
 }
