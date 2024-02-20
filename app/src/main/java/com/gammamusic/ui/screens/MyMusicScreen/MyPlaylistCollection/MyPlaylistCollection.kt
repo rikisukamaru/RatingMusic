@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -107,7 +109,6 @@ fun MyPlaylistCollection(navController: NavController) {
             },
             content = {
                 LazyColumn {
-
                     itemsIndexed(playlists) { index, playlist ->
                         Card(onClick = {
                            navController.navigate("PlayList/${playlist.id}")
@@ -120,6 +121,25 @@ fun MyPlaylistCollection(navController: NavController) {
                         ){
                             Text(playlist.name!!)
                         }
+                        androidx.compose.material3.Button(
+                            onClick = {
+                                // Действие при нажатии на кнопк
+                                    if (playlist != null) {
+                                        vviewModel.publishPlaylist(playlist)
+                                        // Добавьте сообщение об успешной публикации или обработку ошибок
+                                    } else {
+                                        // Плейлист не найден, обработайте этот случай
+                                        Log.e("PlayListScreen", "Плейлист не найден для публикации")
+                                    }
+                            },
+                            modifier = Modifier
+                                .size(56.dp)
+                                .background(Color.Black)
+                                .padding(8.dp),
+                            colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
+                        ) {
+                            androidx.compose.material.Text(text = "Опубликовать")
+                        }
 
                     }
                     viewModel.loadPlaylists()
@@ -129,6 +149,8 @@ fun MyPlaylistCollection(navController: NavController) {
         )
     }
 }
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaylistForm(onCreatePlaylist: (String) -> Unit) {

@@ -1,8 +1,10 @@
 package com.gammamusic.domain.model
 
 data class Playlist(
-    var id: String = "",
-    var name: String? = "",
-    var songs: List<String> = listOf(),
+    val id: String = "",
+    val name: String? = "",
+    val songs: List<String> = listOf(),
     val photoUrl: String? = "",
+    val rating: Int = 0,
+    var published: Boolean = false
 )

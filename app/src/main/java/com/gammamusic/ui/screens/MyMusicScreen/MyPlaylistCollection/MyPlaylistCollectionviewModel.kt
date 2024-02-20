@@ -22,6 +22,9 @@ class MyPlaylistCollectionViewModel: ViewModel() {
     private val database = FirebaseDatabase.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
+    val chartsRef = database.getReference("charts")
+
+
 
     fun createPlaylist(playlistName: String) {
         val currentUser = auth.currentUser
@@ -44,6 +47,7 @@ class MyPlaylistCollectionViewModel: ViewModel() {
 
 
     fun loadPlaylists() {
+        chartsRef.setValue(null)
         val currentUser = auth.currentUser
         val userId = currentUser?.uid
 

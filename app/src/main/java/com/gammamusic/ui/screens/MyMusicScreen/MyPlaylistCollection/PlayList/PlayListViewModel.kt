@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gammamusic.domain.model.Player.Track
+import com.gammamusic.domain.model.Playlist
 import com.gammamusic.domain.model.Search.Search
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -12,6 +13,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 
 class PlayListViewModel:ViewModel(){
@@ -45,6 +47,17 @@ class PlayListViewModel:ViewModel(){
                 }
             })
         }
+    }
+    val database = FirebaseDatabase.getInstance()
+
+    fun publishPlaylist(playlist: Playlist) {
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user != null) {
+            database.getReference("charts").child("published").push().setValue(playlist.id)
+        } else {
+            // Обработать ошибку авторизации
+        }
+
     }
 
     fun addSongToPlaylist(songId: Long,title:String,preview:String,nameArtist:String,idArtist:Long,cover:String, playlistId: String) {

@@ -34,6 +34,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 
@@ -62,19 +64,21 @@ import kotlinx.coroutines.launch
 
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun PlayListScreen(viewModel: PlayListViewModel, selectedPlaylistId: String) {
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     var isPlayerVisible by remember { mutableStateOf(false) }
     val sea by viewModel.trakes.observeAsState(initial = emptyList())
+
     var trackId by remember{
         mutableStateOf(0L)
     }
     LaunchedEffect(key1 = selectedPlaylistId) {
         viewModel.loadPlaylist(selectedPlaylistId)
     }
+
 
 
     Box(
@@ -108,7 +112,9 @@ fun PlayListScreen(viewModel: PlayListViewModel, selectedPlaylistId: String) {
                           )
                       }
 
-                      Box(modifier =  Modifier.fillMaxWidth(0.4f).wrapContentWidth(Alignment.Start)){
+                      Box(modifier = Modifier
+                          .fillMaxWidth(0.4f)
+                          .wrapContentWidth(Alignment.Start)){
                           Column() {
                               androidx.compose.material3.Text(text = track.title)
                               androidx.compose.material3.Text(text = track.nameArtist)
@@ -160,6 +166,9 @@ fun PlayListScreen(viewModel: PlayListViewModel, selectedPlaylistId: String) {
     if (isPlayerVisible) {
         MusicPlayerScreen(id =trackId)
     }
+
+
+
 
 
 }
