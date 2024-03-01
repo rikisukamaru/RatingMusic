@@ -134,7 +134,7 @@ fun MyPlaylistCollection(navController: NavController) {
                             },
                             modifier = Modifier
                                 .size(56.dp)
-                                .background(Color.Black)
+                                .background(Color.Blue)
                                 .padding(8.dp),
                             colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                         ) {

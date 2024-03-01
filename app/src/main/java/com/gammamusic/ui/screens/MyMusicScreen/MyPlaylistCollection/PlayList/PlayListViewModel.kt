@@ -48,17 +48,20 @@ class PlayListViewModel:ViewModel(){
             })
         }
     }
-    val database = FirebaseDatabase.getInstance()
+
 
     fun publishPlaylist(playlist: Playlist) {
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
-            database.getReference("charts").child("published").push().setValue(playlist.id)
+            val database = FirebaseDatabase.getInstance()
+            val reference = database.getReference("charts").child("published").push()
+            reference.setValue(playlist)
         } else {
-            // Обработать ошибку авторизации
+            // Обработка ошибки авторизации
         }
-
     }
+
+
 
     fun addSongToPlaylist(songId: Long,title:String,preview:String,nameArtist:String,idArtist:Long,cover:String, playlistId: String) {
         val database = Firebase.database
