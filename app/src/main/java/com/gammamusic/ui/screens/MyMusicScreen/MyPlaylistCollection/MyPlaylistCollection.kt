@@ -121,25 +121,7 @@ fun MyPlaylistCollection(navController: NavController) {
                         ){
                             Text(playlist.name!!)
                         }
-                        androidx.compose.material3.Button(
-                            onClick = {
-                                // Действие при нажатии на кнопк
-                                    if (playlist != null) {
-                                        vviewModel.publishPlaylist(playlist)
-                                        // Добавьте сообщение об успешной публикации или обработку ошибок
-                                    } else {
-                                        // Плейлист не найден, обработайте этот случай
-                                        Log.e("PlayListScreen", "Плейлист не найден для публикации")
-                                    }
-                            },
-                            modifier = Modifier
-                                .size(56.dp)
-                                .background(Color.Blue)
-                                .padding(8.dp),
-                            colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
-                        ) {
-                            androidx.compose.material.Text(text = "Опубликовать")
-                        }
+
 
                     }
                     viewModel.loadPlaylists()

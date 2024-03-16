@@ -146,6 +146,22 @@ fun PlayListScreen(viewModel: PlayListViewModel, selectedPlaylistId: String) {
                 contentDescription = "Добавить"
             )
         }
+        androidx.compose.material3.Button(
+            onClick = {
+                // Действие при нажатии на кнопк
+
+                    viewModel.publishSelectedPlaylist(selectedPlaylistId)
+                    // Добавьте сообщение об успешной публикации или обработку ошибок
+
+            },
+            modifier = Modifier
+                .size(56.dp)
+                .background(Color.Blue)
+                .padding(8.dp),
+            colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
+        ) {
+            androidx.compose.material.Text(text = "Опубликовать")
+        }
     }
     ModalBottomSheetLayout(
         sheetState = sheetState,

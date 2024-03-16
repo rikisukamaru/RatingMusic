@@ -15,6 +15,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
+import kotlin.math.log
 
 class PlayListViewModel:ViewModel(){
     private val _searches = MutableLiveData<List<Search>>()
@@ -50,16 +51,33 @@ class PlayListViewModel:ViewModel(){
     }
 
 
-    fun publishPlaylist(playlist: Playlist) {
+    fun publishSelectedPlaylist(playlistId: String) {
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             val database = FirebaseDatabase.getInstance()
-            val reference = database.getReference("charts").child("published").push()
-            reference.setValue(playlist)
+            val playlistRef = database.getReference("users/${user.uid}/playlists/$playlistId")
+            playlistRef.get().addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val playlist = snapshot.getValue(Playlist::class.java)
+                    if (playlist != null) {
+                        val reference = database.getReference("charts").child("published").push()
+                        reference.setValue(playlist)
+                    } else {
+                        // Обработка ошибки преобразования данных
+                    }
+                } else {
+                    // Обработка ошибки, если плейлист не найден
+                }
+            }.addOnFailureListener {
+                // Обработка ошибки при чтении данных из Firebase
+            }
         } else {
             // Обработка ошибки авторизации
         }
     }
+
+
+
 
 
 
@@ -69,7 +87,7 @@ class PlayListViewModel:ViewModel(){
         val userPlaylistRef = database.getReference("users/$userId/playlists/$playlistId/tracklist")
 
         // Проверяем, есть ли уже такая песня в tracklist
-        userPlaylistRef.child("songs").addListenerForSingleValueEvent(object : ValueEventListener {
+        userPlaylistRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 var isSongAlreadyAdded = false
 
@@ -84,7 +102,7 @@ class PlayListViewModel:ViewModel(){
 
                 if (!isSongAlreadyAdded) {
                     // Если песни еще нет в tracklist, добавляем ее
-                    val newSongRef = userPlaylistRef.child("songs").push()
+                    val newSongRef = userPlaylistRef.push()
                     newSongRef.child("songId").setValue(songId)
                     newSongRef.child("title").setValue(title)
                     newSongRef.child("preview").setValue(preview)
@@ -103,7 +121,7 @@ class PlayListViewModel:ViewModel(){
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
             val database = Firebase.database
-            val playlistRef = database.getReference("users/$userId/playlists/$playlistId/tracklist/songs")
+            val playlistRef = database.getReference("users/$userId/playlists/$playlistId/tracklist")
 
             playlistRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
