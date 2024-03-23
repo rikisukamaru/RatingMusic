@@ -63,7 +63,7 @@ dependencies {
     implementation ("androidx.compose.material:material:1.5.3") // последняя версия
     implementation ("androidx.compose.ui:ui-tooling:1.5.3") // последняя версия
     implementation ("androidx.compose.animation:animation:1.5.3")
-
+    implementation ("androidx.compose.material3:material3:1.1.0-alpha06")
     implementation("io.coil-kt:coil-compose:2.0.0-rc01")
 
 
