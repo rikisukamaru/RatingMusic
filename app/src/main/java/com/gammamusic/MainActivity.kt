@@ -25,6 +25,7 @@ import com.gammamusic.presentation.sign_in.SignInViewModel
 import com.gammamusic.ui.navigation.AuthNavigation.Registration
 import com.gammamusic.ui.navigation.MainNavigation.MainScreen
 import com.gammamusic.ui.screens.Autorization.Login
+import com.gammamusic.ui.screens.Splash_Screen.SplashScreen
 import com.gammamusic.ui.theme.GammaMusicTheme
 import com.google.firebase.BuildConfig
 import kotlinx.coroutines.launch
@@ -46,7 +47,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             GammaMusicTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "LOGIN" ){
+                NavHost(navController = navController, startDestination = "splash_screen" ){
+                    composable("splash_screen"){
+                        SplashScreen(navcontroller = navController)
+                    }
                     composable("LOGIN"){
                         //Login(navHostController)
                         val viewModel = viewModel<SignInViewModel>()
@@ -87,7 +91,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     composable("Registered"){
-                        Registration()
+                        Registration(navController)
 
                     }
                     composable("MainScreen"){
