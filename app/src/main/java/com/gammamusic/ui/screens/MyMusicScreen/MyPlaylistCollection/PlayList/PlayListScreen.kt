@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 
 import com.gammamusic.ui.screens.MusicPlayer.MusicPlayerScreen
+import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayListViewModel
 
 import kotlinx.coroutines.launch
 
@@ -66,7 +67,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun PlayListScreen(viewModel: PlayListViewModel, selectedPlaylistId: String) {
+fun PlayListScreen(viewModel: PlayListViewModel,  selectedPlaylistId: String) {
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     var isPlayerVisible by remember { mutableStateOf(false) }

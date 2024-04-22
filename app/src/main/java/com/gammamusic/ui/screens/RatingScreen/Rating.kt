@@ -1,5 +1,6 @@
 package com.example.freelis.ui.screens.RatingScreen
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -44,15 +45,17 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.gammamusic.R
 import com.gammamusic.domain.model.Playlist
 import com.gammamusic.ui.screens.RatingScreen.PlaylistChartViewModel
+import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayList
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @Composable
-fun RatingScreen() {
+fun RatingScreen(navController: NavController) {
     val (selectedTab, setSelectedTab) = remember { mutableStateOf(0) }
     val playlistViewModel: PlaylistChartViewModel = viewModel()
 
@@ -91,17 +94,17 @@ fun RatingScreen() {
         ) {
             when (selectedTab) {
                 0 -> Text("Рейтинг пользователей")
-                1 -> PlaylistChart(playlistViewModel.playlists.value)
+                1 -> PlaylistChart(playlistViewModel.playlists.value, navController = navController)
             }
         }
     }
 }
 
 @Composable
-fun PlaylistChart(playlists: List<Playlist>) {
+fun PlaylistChart(playlists: List<Playlist>,navController: NavController) {
     LazyColumn (Modifier.padding(bottom = 85.dp)){
         items(playlists) { playlist ->
-            PlaylistCard(playlist,playlists.indexOf(playlist))
+            PlaylistCard(playlist,playlists.indexOf(playlist), navController = navController )
         }
     }
 }
@@ -110,7 +113,7 @@ fun PlaylistChart(playlists: List<Playlist>) {
     ExperimentalMaterial3Api::class
 )
 @Composable
-fun PlaylistCard(playlist: Playlist, raitcount:Int) {
+fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController) {
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val swipeableState = rememberSwipeableState(initialValue = 0)
@@ -156,7 +159,9 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int) {
                 .width(370.dp)
                 .height(79.dp)
                 .combinedClickable(
-                    onClick = { /* Обработка обычного нажатия */ },
+                    onClick = { val playlistId = playlist.id
+                        Log.e("playlistId",playlistId)// Извлекаем ID плейлиста из объекта playlist
+                        navController.navigate("OpenPbPlayList/${playlistId.toString()}") },
                     onLongClick = { scope.launch { sheetState.show() } },
                     interactionSource = remember { MutableInteractionSource() },
                     indication = rememberRipple()

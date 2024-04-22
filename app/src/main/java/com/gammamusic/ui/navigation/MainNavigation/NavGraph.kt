@@ -23,6 +23,8 @@ import com.gammamusic.ui.screens.MyMusicScreen.MyMusicCollection.MyMusicCollecti
 import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList.PlayListScreen
 import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList.PlayListViewModel
 import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.MyPlaylistCollectionViewModel
+import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayList
+import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayListViewModel
 
 
 @Composable
@@ -30,6 +32,7 @@ fun NavGraph(navHostController: NavHostController) {
     Box(modifier = Modifier.fillMaxSize()){
         val myMusicCollectionViewModel = MyMusicCollectionViewModel()
         val playListViewModel = PlayListViewModel()
+        val pbPlayListViewModel = pbPlayListViewModel()
 
         NavHost(navController = navHostController, startDestination = "MyMusic" ){
             composable("MyMusic"){
@@ -39,7 +42,7 @@ fun NavGraph(navHostController: NavHostController) {
                 MyNewMusicScreen()
             }
             composable("Rating"){
-                RatingScreen()
+                RatingScreen(navHostController)
             }
             composable(route = ScreensInMyMusic.MyMusicCollection.route){
                 MyMusicCollection(myMusicCollectionViewModel)
@@ -52,6 +55,11 @@ fun NavGraph(navHostController: NavHostController) {
                 // Создайте экземпляр PlayListViewModel и передайте playlistId
                 PlayListScreen(viewModel = playListViewModel, selectedPlaylistId = playlistId.orEmpty())
             }
+            composable(route = "OpenPbPlayList/{playlistId}"){backStackEntry ->
+                val playlistId = backStackEntry.arguments?.getString("playlistId")?: return@composable
+                pbPlayList(navController = navHostController,pbPlayListViewModel,playlistId = playlistId.orEmpty() )
+            }
+
 
         }
 
