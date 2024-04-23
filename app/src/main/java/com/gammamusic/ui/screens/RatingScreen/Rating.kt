@@ -160,7 +160,6 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController)
                 .height(79.dp)
                 .combinedClickable(
                     onClick = { val playlistId = playlist.id
-                        Log.e("playlistId",playlistId)// Извлекаем ID плейлиста из объекта playlist
                         navController.navigate("OpenPbPlayList/${playlistId.toString()}") },
                     onLongClick = { scope.launch { sheetState.show() } },
                     interactionSource = remember { MutableInteractionSource() },
