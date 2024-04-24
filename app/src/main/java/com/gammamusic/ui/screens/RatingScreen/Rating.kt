@@ -51,6 +51,7 @@ import com.gammamusic.R
 import com.gammamusic.domain.model.Playlist
 import com.gammamusic.ui.screens.RatingScreen.PlaylistChartViewModel
 import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayList
+import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayListViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -94,17 +95,17 @@ fun RatingScreen(navController: NavController) {
         ) {
             when (selectedTab) {
                 0 -> Text("Рейтинг пользователей")
-                1 -> PlaylistChart(playlistViewModel.playlists.value, navController = navController)
+                1 -> PlaylistChart(playlistViewModel.playlists.value, navController = navController,playlistViewModel)
             }
         }
     }
 }
 
 @Composable
-fun PlaylistChart(playlists: List<Playlist>,navController: NavController) {
+fun PlaylistChart(playlists: List<Playlist>,navController: NavController,viewModel: PlaylistChartViewModel) {
     LazyColumn (Modifier.padding(bottom = 85.dp)){
         items(playlists) { playlist ->
-            PlaylistCard(playlist,playlists.indexOf(playlist), navController = navController )
+            PlaylistCard(playlist,playlists.indexOf(playlist), navController = navController ,viewModel)
         }
     }
 }
@@ -113,7 +114,7 @@ fun PlaylistChart(playlists: List<Playlist>,navController: NavController) {
     ExperimentalMaterial3Api::class
 )
 @Composable
-fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController) {
+fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController,viewModel: PlaylistChartViewModel) {
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val swipeableState = rememberSwipeableState(initialValue = 0)
@@ -148,6 +149,16 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController)
                         coroutineScope.launch {
                             offsetX.animateTo(targetValue = 0f)
                         }
+                        if (offsetX.value > 70f) {
+
+                            // Свайп вправо, увеличиваем рейтинг
+                            viewModel.updatePlaylistRating(playlist.id, 15)
+
+                        } else if (offsetX.value < -70f) {
+                            // Свайп влево, уменьшаем рейтинг
+                            viewModel.updatePlaylistRating(playlist.id, -15)
+
+                        }
                     }
                 )
             }
@@ -160,6 +171,7 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController)
                 .height(79.dp)
                 .combinedClickable(
                     onClick = { val playlistId = playlist.id
+                        viewModel.updatePlaylistRating(playlistId,15)
                         navController.navigate("OpenPbPlayList/${playlistId.toString()}") },
                     onLongClick = { scope.launch { sheetState.show() } },
                     interactionSource = remember { MutableInteractionSource() },
@@ -219,10 +231,30 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController)
 
         // Отображение иконок в зависимости от направления свайпа
         AnimatedVisibility(visible = offsetX.value > 0, modifier = Modifier.align(Alignment.CenterStart)) {
-            Icon(Icons.Default.Check, contentDescription = "Check Icon")
+            androidx.compose.material3.Text(
+                text = "+25",
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp,
+                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                    fontWeight = FontWeight(700),
+                    letterSpacing = 0.96.sp,
+                    color = Color(0xFFFFFFFF)
+                )
+            )
         }
         AnimatedVisibility(visible = offsetX.value < 0, modifier = Modifier.align(Alignment.CenterEnd)) {
-            Icon(Icons.Default.Close, contentDescription = "Close Icon")
+            androidx.compose.material3.Text(
+                text = "-25",
+                style = TextStyle(
+                    fontSize = 16.sp,
+                    lineHeight = 20.sp,
+                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                    fontWeight = FontWeight(700),
+                    letterSpacing = 0.96.sp,
+                    color = Color(0xFFFFFFFF)
+                )
+            )
         }
     }
     if (sheetState.isVisible) {

@@ -41,6 +41,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -173,14 +174,13 @@ fun TrackItem(track: Track,viewModel: pbPlayListViewModel,playlistId: String) {
             viewModel.loadSwipeCount(playlistId, userId)
         }
 
-    val isPlayerVisible by remember { mutableStateOf(false) }
-    val trackId by remember {
+    var isPlayerVisible by remember { mutableStateOf(false) }
+    var trackId by remember {
         mutableStateOf(0L)
     }
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
-    val swipeableState = rememberSwipeableState(initialValue = 0)
-    val anchors = mapOf(0f to 0, 70f to 1, -70f to -1) // Задаем точки привязки для свайпа
+
     val coroutineScope = rememberCoroutineScope()
     // Используем Animatable для отслеживания смещения карточки
     val offsetX = remember { Animatable(0f) }
@@ -225,6 +225,7 @@ fun TrackItem(track: Track,viewModel: pbPlayListViewModel,playlistId: String) {
                 .fillMaxWidth()
                 .combinedClickable(
                     onClick = {
+
                     },
                     onLongClick = { scope.launch { sheetState.show() } },
                     interactionSource = remember { MutableInteractionSource() },
@@ -337,4 +338,6 @@ fun TrackItem(track: Track,viewModel: pbPlayListViewModel,playlistId: String) {
         Log.e("TAG", "User not logged in")
     }
 }
+
+
 
