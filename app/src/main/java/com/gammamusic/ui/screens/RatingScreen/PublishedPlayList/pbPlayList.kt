@@ -1,12 +1,13 @@
 package com.gammamusic.ui.screens.RatingScreen.PublishedPlayList
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.Orientation
+
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -25,12 +26,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material.swipeable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
@@ -62,6 +61,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.gammamusic.R
 import com.gammamusic.domain.model.Player.Track
 import com.gammamusic.ui.screens.MusicPlayer.MusicPlayerScreen
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -153,7 +153,7 @@ fun pbPlayList(navController: NavController, viewModel: pbPlayListViewModel, pla
             LazyColumn(Modifier.padding(bottom = 65.dp)) {
                 items(tracks.size) { index ->
                     val track = tracks[index]
-                    TrackItem(track = track)
+                    TrackItem(track = track,viewModel, playlistId = playlistId)
                     Spacer(modifier = Modifier.height(5.dp))
                 }
             }
@@ -165,7 +165,14 @@ fun pbPlayList(navController: NavController, viewModel: pbPlayListViewModel, pla
     ExperimentalFoundationApi::class
 )
 @Composable
-fun TrackItem(track: Track) {
+fun TrackItem(track: Track,viewModel: pbPlayListViewModel,playlistId: String) {
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    if (currentUser != null) {
+        val userId = currentUser.uid
+        LaunchedEffect(userId) {
+            viewModel.loadSwipeCount(playlistId, userId)
+        }
+
     val isPlayerVisible by remember { mutableStateOf(false) }
     val trackId by remember {
         mutableStateOf(0L)
@@ -173,7 +180,7 @@ fun TrackItem(track: Track) {
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val swipeableState = rememberSwipeableState(initialValue = 0)
-    val anchors = mapOf(0f to 0, 370f to 1, -370f to -1) // Задаем точки привязки для свайпа
+    val anchors = mapOf(0f to 0, 70f to 1, -70f to -1) // Задаем точки привязки для свайпа
     val coroutineScope = rememberCoroutineScope()
     // Используем Animatable для отслеживания смещения карточки
     val offsetX = remember { Animatable(0f) }
@@ -183,13 +190,6 @@ fun TrackItem(track: Track) {
             .fillMaxWidth()
             .padding(bottom = 10.dp)
             .background(color = Color(0xFF000000))
-            .swipeable(
-                state = swipeableState,
-                anchors = anchors,
-                orientation = Orientation.Horizontal,
-                thresholds = { _, _ -> FractionalThreshold(0.5f) }, // Устанавливаем порог свайпа
-                reverseDirection = true // Разрешаем свайп в обоих направлениях
-            )
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDrag = { change, dragAmount ->
@@ -203,6 +203,16 @@ fun TrackItem(track: Track) {
                         // Запускаем анимацию возврата в первоначальное положение внутри корутины
                         coroutineScope.launch {
                             offsetX.animateTo(targetValue = 0f)
+                        }
+                        if (offsetX.value > 70f) {
+
+                            // Свайп вправо, увеличиваем рейтинг
+                            viewModel.updatePlaylistRating(playlistId, 25)
+                            viewModel.increaseSwipeCount(playlistId, userId)
+                        } else if (offsetX.value < -70f) {
+                            // Свайп влево, уменьшаем рейтинг
+                            viewModel.updatePlaylistRating(playlistId, -25)
+                            viewModel.increaseSwipeCount(playlistId, userId)
                         }
                     }
                 )
@@ -321,6 +331,10 @@ fun TrackItem(track: Track) {
     }
     if (isPlayerVisible) {
         MusicPlayerScreen(id = trackId)
+    }
+
+    }else{
+        Log.e("TAG", "User not logged in")
     }
 }
 
