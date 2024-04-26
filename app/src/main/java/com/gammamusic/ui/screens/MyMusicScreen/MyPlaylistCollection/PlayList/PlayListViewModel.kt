@@ -57,6 +57,7 @@ class PlayListViewModel:ViewModel(){
                 if (snapshot.exists()) {
                     val playlist = snapshot.getValue(Playlist::class.java)
                     if (playlist != null) {
+                        playlist.userId = user.uid
                         val reference = database.getReference("charts").child("published").push()
                         reference.setValue(playlist)
                     } else {

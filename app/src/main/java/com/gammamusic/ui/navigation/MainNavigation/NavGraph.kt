@@ -13,16 +13,17 @@ import androidx.navigation.compose.composable
 
 import com.gammamusic.ui.screens.MyMusicScreen.MyMusicScreen
 import com.example.freelis.ui.screens.MyMusicScreen.MyPlaylistCollection.MyPlaylistCollection
-import com.example.freelis.ui.screens.MyNewMusicScreen.MyNewMusicScreen
+
+import com.example.freelis.ui.screens.MyNewMusicScreen.MyProfileScreen
 import com.example.freelis.ui.screens.RatingScreen.RatingScreen
 
-import com.gammamusic.ui.screens.MusicPlayer.MusicPlayerScreen
+
 
 import com.gammamusic.ui.screens.MyMusicScreen.MyMusicCollection.MyMusicCollection
 import com.gammamusic.ui.screens.MyMusicScreen.MyMusicCollection.MyMusicCollectionViewModel
 import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList.PlayListScreen
 import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList.PlayListViewModel
-import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.MyPlaylistCollectionViewModel
+import com.gammamusic.ui.screens.MyNewMusicScreen.MyProfileScreenViewModel
 import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayList
 import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayListViewModel
 
@@ -33,13 +34,14 @@ fun NavGraph(navHostController: NavHostController) {
         val myMusicCollectionViewModel = MyMusicCollectionViewModel()
         val playListViewModel = PlayListViewModel()
         val pbPlayListViewModel = pbPlayListViewModel()
+        val MyProfileScreenViewModel = MyProfileScreenViewModel()
 
         NavHost(navController = navHostController, startDestination = "MyMusic" ){
             composable("MyMusic"){
                 MyMusicScreen(navHostController)
             }
             composable("MyNewMusic"){
-                MyNewMusicScreen()
+                MyProfileScreen(MyProfileScreenViewModel,navHostController)
             }
             composable("Rating"){
                 RatingScreen(navHostController)
