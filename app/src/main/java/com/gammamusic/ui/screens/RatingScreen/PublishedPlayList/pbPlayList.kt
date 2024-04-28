@@ -28,7 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material.rememberSwipeableState
+
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+
 import com.gammamusic.R
 import com.gammamusic.domain.model.Player.Track
 import com.gammamusic.ui.screens.MusicPlayer.MusicPlayerScreen
@@ -115,7 +116,7 @@ fun pbPlayList(navController: NavController, viewModel: pbPlayListViewModel, pla
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceAround,modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 36.dp)) {
-                Image(painter = painterResource(id = R.drawable.rectangle_lofi), contentDescription = "", modifier = Modifier
+                Image(painter = rememberAsyncImagePainter(model = playlist!!.photoUrl), contentDescription = "", modifier = Modifier
                     .width(263.dp)
                     .height(252.dp))
             }
@@ -137,7 +138,7 @@ fun pbPlayList(navController: NavController, viewModel: pbPlayListViewModel, pla
                         )
                     )
                     Text(
-                        text = "soft, chill, dreamy, lo-fi beats",
+                        text = playlist?.genre!!,
                         style = TextStyle(
                             fontSize = 13.sp,
                             lineHeight = 16.sp,
@@ -174,8 +175,8 @@ fun TrackItem(track: Track,viewModel: pbPlayListViewModel,playlistId: String) {
             viewModel.loadSwipeCount(playlistId, userId)
         }
 
-    var isPlayerVisible by remember { mutableStateOf(false) }
-    var trackId by remember {
+    val isPlayerVisible by remember { mutableStateOf(false) }
+    val trackId by remember {
         mutableStateOf(0L)
     }
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -193,7 +194,7 @@ fun TrackItem(track: Track,viewModel: pbPlayListViewModel,playlistId: String) {
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDrag = { change, dragAmount ->
-                        change.consumeAllChanges()
+                        change.consume()
                         val (x, _) = dragAmount
                         coroutineScope.launch {
                             offsetX.snapTo(offsetX.value + x)

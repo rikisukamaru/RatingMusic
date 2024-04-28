@@ -1,6 +1,7 @@
 package com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection
 
-import android.util.Log
+import android.net.Uri
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,9 +11,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
 
 class MyPlaylistCollectionViewModel: ViewModel() {
@@ -26,24 +26,57 @@ class MyPlaylistCollectionViewModel: ViewModel() {
 
 
 
-    fun createPlaylist(playlistName: String) {
+    fun createPlaylist(playlistName: String, imageUri: Uri?,genre:String) {
         val currentUser = auth.currentUser
         val userId = currentUser?.uid
-
+        val storage = FirebaseStorage.getInstance().reference
         if (userId != null) {
             val playlistId = UUID.randomUUID().toString()
             val ref = database.getReference("users/$userId/playlists/$playlistId")
 
-            val playlist = Playlist(playlistId, playlistName)
-            ref.setValue(playlist)
-                .addOnSuccessListener {
-                    // Playlist created successfully
-                }
-                .addOnFailureListener { error ->
-                    // Error creating playlist
-                }
+            // Проверяем, есть ли изображение
+            if (imageUri != null) {
+                // Получаем ссылку на Firebase Storage
+                val storageRef = storage
+                val imagesRef = storageRef.child("images/$playlistId.jpg")
+
+                // Загружаем изображение в Storage
+                imagesRef.putFile(imageUri)
+                    .addOnSuccessListener { taskSnapshot ->
+                        // Получаем URL-адрес загруженного изображения
+                        imagesRef.downloadUrl.addOnSuccessListener { uri ->
+                            val imageUrl = uri.toString()
+
+                            // Создаем объект Playlist с URL-адресом изображения
+                            val playlist = Playlist(playlistId, playlistName, imageUrl, genre)
+
+                            // Сохраняем Playlist в базу данных
+                            ref.setValue(playlist)
+                                .addOnSuccessListener {
+                                    // Успешно сохранено
+                                }
+                                .addOnFailureListener { error ->
+                                    // Ошибка сохранения
+                                }
+                        }
+                    }
+                    .addOnFailureListener { error ->
+                        // Ошибка загрузки изображения в Storage
+                    }
+            } else {
+                // Если изображение не было выбрано, сохраняем плейлист без изображения
+                val playlist = Playlist(playlistId, playlistName, "",genre)
+                ref.setValue(playlist)
+                    .addOnSuccessListener {
+                        // Успешно сохранено
+                    }
+                    .addOnFailureListener { error ->
+                        // Ошибка сохранения
+                    }
+            }
         }
     }
+
 
 
     fun loadPlaylists() {

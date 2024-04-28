@@ -26,13 +26,16 @@ class MyProfileScreenViewModel: ViewModel() {
         // Например, из Firebase Authentication
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
+            val photoUrl = currentUser.photoUrl?.toString() ?: ""
+            // Замена s96-c на s400-c для получения изображения с более высоким разрешением
+            val highResPhotoUrl = photoUrl.replace("s96-c", "s600-c")
             _user.value = User(
                 name = currentUser.displayName ?: "Unknown",
                 email = currentUser.email ?: "Unknown",
                 id = currentUser.uid,
                 playlists = listOf(),
                 rating = 0,
-                photoUrl = currentUser.photoUrl?.toString() ?: ""
+                photoUrl = highResPhotoUrl
             )
         }
     }
