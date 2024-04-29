@@ -6,5 +6,6 @@ data class User(
     val email: String,
     val photoUrl: String,
     val playlists: List<String>,
-    val rating: Int
+    val ratingAuthor: Int,
+    val publishedPlaylistCount: Int
 )

@@ -23,7 +23,7 @@ class MyProfileScreenViewModel: ViewModel() {
 
     private fun loadUserData() {
         // Здесь должен быть ваш код для получения данных пользователя
-        // Например, из Firebase Authentication
+
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             val photoUrl = currentUser.photoUrl?.toString() ?: ""
@@ -34,8 +34,9 @@ class MyProfileScreenViewModel: ViewModel() {
                 email = currentUser.email ?: "Unknown",
                 id = currentUser.uid,
                 playlists = listOf(),
-                rating = 0,
-                photoUrl = highResPhotoUrl
+                ratingAuthor = 0,
+                photoUrl = highResPhotoUrl,
+                publishedPlaylistCount = 0
             )
         }
     }

@@ -41,12 +41,12 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
+
 
 import com.gammamusic.R
 import com.gammamusic.domain.model.Playlist
@@ -81,6 +81,18 @@ fun MyProfileScreen(viewModel: MyProfileScreenViewModel,navController: NavContro
                             lineHeight = 44.sp,
                             fontFamily = FontFamily(Font(R.font.raleway_extralight)),
                             fontWeight = FontWeight(500),
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFFFFFFFF)
+                        ),
+                        modifier = Modifier.padding(start = 30.dp, bottom = 10.dp)
+                    )
+                    Text(
+                        text = "${us.ratingAuthor.toString()}",
+                        style = TextStyle(
+                            fontSize = 36.sp,
+                            lineHeight = 44.sp,
+                            fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                            fontWeight = FontWeight(400),
                             textAlign = TextAlign.Center,
                             color = Color(0xFFFFFFFF)
                         ),

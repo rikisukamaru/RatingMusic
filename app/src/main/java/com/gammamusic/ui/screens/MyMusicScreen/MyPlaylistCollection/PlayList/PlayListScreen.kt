@@ -27,14 +27,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.ModalDrawer
+
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 
 import com.gammamusic.ui.screens.MusicPlayer.MusicPlayerScreen
-import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayListViewModel
+
 
 import kotlinx.coroutines.launch
 
@@ -152,7 +152,7 @@ fun PlayListScreen(viewModel: PlayListViewModel,  selectedPlaylistId: String) {
                 // Действие при нажатии на кнопк
 
                     viewModel.publishSelectedPlaylist(selectedPlaylistId)
-                    // Добавьте сообщение об успешной публикации или обработку ошибок
+
 
             },
             modifier = Modifier

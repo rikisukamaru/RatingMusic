@@ -11,5 +11,6 @@ data class Playlist(
     var rating: Int = 0,
     var userId: String? = null,
     var published: Boolean = true,
-    var swipeCounts: Map<String, Int>? = null
+    var swipeCounts: Map<String, Int>? = null,
+
 )

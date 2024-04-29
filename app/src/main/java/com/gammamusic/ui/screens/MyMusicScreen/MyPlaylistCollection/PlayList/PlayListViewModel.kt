@@ -19,9 +19,14 @@ class PlayListViewModel:ViewModel(){
     val searches: LiveData<List<Search>> get() = _searches
     private val _tracks = MutableLiveData<List<Track>>()
     val trakes: LiveData<List<Track>> get() = _tracks
+    private val _publishedPlaylistCount = MutableLiveData<Int>()
+
+
+    private val _totalRating = MutableLiveData<Int>()
 
     init {
-
+        _publishedPlaylistCount.value = 0
+        _totalRating.value = 0
         // Получить данные из Firebase
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId != null) {
@@ -52,31 +57,69 @@ class PlayListViewModel:ViewModel(){
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
             val database = FirebaseDatabase.getInstance()
-            val playlistRef = database.getReference("users/${user.uid}/playlists/$playlistId")
-            playlistRef.get().addOnSuccessListener { snapshot ->
-                if (snapshot.exists()) {
-                    val playlist = snapshot.getValue(Playlist::class.java)
-                    if (playlist != null) {
-                        playlist.userId = user.uid
-                        val reference = database.getReference("charts").child("published").push()
-                        reference.setValue(playlist)
-                    } else {
-                        // Обработка ошибки преобразования данных
+            val userRef = database.getReference("users/${user.uid}")
+
+            userRef.child("playlistCount").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val count = dataSnapshot.getValue(Int::class.java) ?: 0
+
+                    if (count >= 5) {
+                        // Публикация шестого плейлиста, пересчет рейтинга автора
+                        val userRatingRef = database.getReference("users/${user.uid}/ratingAuthor")
+                        val publishedPlaylistsRef = database.getReference("charts/published")
+
+                        publishedPlaylistsRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                var totalRating = 0
+                                var playlistCount = 0
+                                for (playlistSnapshot in dataSnapshot.children) {
+                                    val playlist = playlistSnapshot.getValue(Playlist::class.java)
+                                    if (playlist != null && playlist.userId == user.uid) {
+                                        totalRating += playlist.rating
+                                        playlistCount++
+                                    }
+                                }
+                                val authorRating = if (playlistCount > 0) totalRating / playlistCount else 0
+                                userRatingRef.setValue(authorRating)
+                            }
+
+                            override fun onCancelled(databaseError: DatabaseError) {
+                                // Обработка ошибки при чтении данных
+                            }
+                        })
                     }
-                } else {
-                    // Обработка ошибки, если плейлист не найден
+
+                    // Увеличить счетчик опубликованных плейлистов пользователя
+                    userRef.child("playlistCount").setValue(count + 1)
+
+                    // Публикация плейлиста
+                    val playlistRef = database.getReference("users/${user.uid}/playlists/$playlistId")
+                    playlistRef.get().addOnSuccessListener { snapshot ->
+                        if (snapshot.exists()) {
+                            val playlist = snapshot.getValue(Playlist::class.java)
+                            if (playlist != null) {
+                                playlist.userId = user.uid
+                                val reference = database.getReference("charts/published").push()
+                                reference.setValue(playlist)
+                            } else {
+                                // Обработка ошибки преобразования данных
+                            }
+                        } else {
+                            // Обработка ошибки, если плейлист не найден
+                        }
+                    }.addOnFailureListener {
+                        // Обработка ошибки при чтении данных из Firebase
+                    }
                 }
-            }.addOnFailureListener {
-                // Обработка ошибки при чтении данных из Firebase
-            }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Обработка ошибки при чтении данных
+                }
+            })
         } else {
             // Обработка ошибки авторизации
         }
     }
-
-
-
-
 
 
     fun addSongToPlaylist(songId: Long,title:String,preview:String,nameArtist:String,idArtist:Long,cover:String, playlistId: String) {
