@@ -14,12 +14,14 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
 class UserChatViewModel: ViewModel() {
-    val users = MutableLiveData<List<User>>()
     private val _users = MutableLiveData<List<User>>()
+    val users: LiveData<List<User>>  = _users
 
+init {
+    loadTopUsers()
+}
 
-
-     fun loadTopUsers() {
+    fun loadTopUsers() {
         val database = FirebaseDatabase.getInstance()
         val usersRef = database.getReference("users")
         val usersList = mutableListOf<User>()
@@ -35,10 +37,20 @@ class UserChatViewModel: ViewModel() {
                         authorNameRef.addListenerForSingleValueEvent(object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 val userName = snapshot.getValue(String::class.java) ?: "Unknown"
-                                val ratingAuthor = user.ratingAuthor
-                                val userObj = User(name = userName, ratingAuthor = ratingAuthor)
-                                usersList.add(userObj)
-                                println("User: $userName - Rating Author: $ratingAuthor")
+                                val photoUserRef = database.getReference("users/$userId/photouser")
+                                photoUserRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(photoSnapshot: DataSnapshot) {
+                                        val photouser = photoSnapshot.getValue(String::class.java) ?: ""
+                                        val highResPhotoUrl = photouser.replace("s96-c", "s600-c")
+                                        val ratingAuthor = user.ratingAuthor
+                                        val userObj = User(name = userName, ratingAuthor = ratingAuthor, photoUrl = highResPhotoUrl)
+                                        usersList.add(userObj)
+                                    }
+
+                                    override fun onCancelled(databaseError: DatabaseError) {
+                                        // Обработка ошибки при чтении данных
+                                    }
+                                })
                             }
 
                             override fun onCancelled(databaseError: DatabaseError) {
@@ -47,8 +59,8 @@ class UserChatViewModel: ViewModel() {
                         })
                     }
                 }
+
                 _users.value = usersList
-                users.value = usersList
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
