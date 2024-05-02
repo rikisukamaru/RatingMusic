@@ -1,25 +1,22 @@
 package com.gammamusic.ui.screens.RatingScreen.PublishedPlayList
 
-import android.util.Log
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gammamusic.domain.model.Rating.User
-import com.google.firebase.auth.FirebaseAuth
+
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+
 
 class UserChatViewModel: ViewModel() {
     private val _users = MutableLiveData<List<User>>()
     val users: LiveData<List<User>>  = _users
 
-init {
-    loadTopUsers()
-}
+
 
     fun loadTopUsers() {
         val database = FirebaseDatabase.getInstance()
@@ -45,6 +42,7 @@ init {
                                         val ratingAuthor = user.ratingAuthor
                                         val userObj = User(name = userName, ratingAuthor = ratingAuthor, photoUrl = highResPhotoUrl)
                                         usersList.add(userObj)
+                                        _users.value = usersList
                                     }
 
                                     override fun onCancelled(databaseError: DatabaseError) {
@@ -60,7 +58,7 @@ init {
                     }
                 }
 
-                _users.value = usersList
+
             }
 
             override fun onCancelled(databaseError: DatabaseError) {

@@ -1,7 +1,7 @@
 package com.example.freelis.ui.screens.RatingScreen
 
 
-import android.net.Uri
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -35,7 +35,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+
 import androidx.compose.ui.graphics.Color
 
 import androidx.compose.ui.input.pointer.pointerInput
@@ -46,16 +46,16 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+
 
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.viewModelFactory
+
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
+
 
 import com.gammamusic.R
 import com.gammamusic.domain.model.Playlist
@@ -70,7 +70,9 @@ fun RatingScreen(navController: NavController) {
     val (selectedTab, setSelectedTab) = remember { mutableStateOf(0) }
     val playlistViewModel: PlaylistChartViewModel = viewModel()
     val usersViewModel: UserChatViewModel = viewModel()
-
+    LaunchedEffect(key1 = Unit) {
+        usersViewModel.loadTopUsers()
+    }
     Scaffold(
         topBar = {
             TopAppBar(
