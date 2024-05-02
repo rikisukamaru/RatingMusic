@@ -58,7 +58,7 @@ class PlayListViewModel:ViewModel(){
         if (user != null) {
             val database = FirebaseDatabase.getInstance()
             val userRef = database.getReference("users/${user.uid}")
-
+            userRef.child("authorname").setValue(user.displayName ?: "Unknown")
             userRef.child("playlistCount").addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val count = dataSnapshot.getValue(Int::class.java) ?: 0

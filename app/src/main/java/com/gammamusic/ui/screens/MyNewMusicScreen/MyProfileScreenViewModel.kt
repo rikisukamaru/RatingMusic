@@ -1,5 +1,7 @@
 package com.gammamusic.ui.screens.MyNewMusicScreen
 
+import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,37 +13,52 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class MyProfileScreenViewModel: ViewModel() {
+class MyProfileScreenViewModel : ViewModel() {
     private val _user = MutableLiveData<User>()
     val user: LiveData<User> = _user
     private val _playlists = MutableLiveData<List<Playlist>>()
     val playlists: LiveData<List<Playlist>> = _playlists
+    private val database = FirebaseDatabase.getInstance()
     init {
-        loadUserData()
-       loadUserPlaylists()
+        loadUserDetails()
+        loadUserPlaylists()
     }
 
-    private fun loadUserData() {
-        // Здесь должен быть ваш код для получения данных пользователя
-
+    private fun loadUserDetails() {
         val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            val photoUrl = currentUser.photoUrl?.toString() ?: ""
-            // Замена s96-c на s400-c для получения изображения с более высоким разрешением
+        if (currentUser!= null) {
+            val userId = currentUser.uid
+            val photoUrl = currentUser.photoUrl?.toString()?: ""
             val highResPhotoUrl = photoUrl.replace("s96-c", "s600-c")
-            _user.value = User(
-                name = currentUser.displayName ?: "Unknown",
-                email = currentUser.email ?: "Unknown",
-                id = currentUser.uid,
-                playlists = listOf(),
-                ratingAuthor = 0,
-                photoUrl = highResPhotoUrl,
-                publishedPlaylistCount = 0
-            )
+
+            // Загрузка рейтинга пользователя
+            val userRef = database.getReference("users/$userId/ratingAuthor")
+            userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val rating = snapshot.getValue(Int::class.java)?: 0
+                    // Загрузка других деталей пользователя
+                    val displayName = currentUser.displayName?: "Unknown"
+                    val email = currentUser.email?: "Unknown"
+
+                    _user.postValue(User(
+                        name = displayName,
+                        email = email,
+                        id = userId,
+                        ratingAuthor = rating,
+                        photoUrl = highResPhotoUrl,
+                        publishedPlaylistCount = 0
+                    ))
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Обработка ошибок
+                }
+            })
         }
     }
+
     private fun loadUserPlaylists() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val userId = FirebaseAuth.getInstance().currentUser?.uid?: return
         val database = FirebaseDatabase.getInstance()
         val playlistsRef = database.getReference("charts/published")
 

@@ -28,6 +28,7 @@ import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +50,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.gammamusic.R
 import com.gammamusic.domain.model.Playlist
 import com.gammamusic.ui.screens.RatingScreen.PlaylistChartViewModel
+import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.UserChatViewModel
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -56,7 +58,10 @@ import kotlin.math.roundToInt
 fun RatingScreen(navController: NavController) {
     val (selectedTab, setSelectedTab) = remember { mutableStateOf(0) }
     val playlistViewModel: PlaylistChartViewModel = viewModel()
-
+    val usersViewModel: UserChatViewModel = viewModel()
+    LaunchedEffect(Unit) {
+          usersViewModel.loadTopUsers()
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -91,9 +96,19 @@ fun RatingScreen(navController: NavController) {
                 .padding(innerPadding)
         ) {
             when (selectedTab) {
-                0 -> Text("Рейтинг пользователей")
+                0 -> UserRatingChart(userChatViewModel = usersViewModel)
                 1 -> PlaylistChart(playlistViewModel.playlists.value, navController = navController,playlistViewModel)
             }
+        }
+    }
+}
+@Composable
+fun UserRatingChart(userChatViewModel: UserChatViewModel) {
+    val users by userChatViewModel.users.observeAsState(initial = emptyList())
+
+    LazyColumn {
+        items(users) { user ->
+            Text(text = "${user.name} - Рейтинг: ${user.ratingAuthor}")
         }
     }
 }
@@ -167,9 +182,11 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController,
                 .width(370.dp)
                 .height(79.dp)
                 .combinedClickable(
-                    onClick = { val playlistId = playlist.id
-                        viewModel.updatePlaylistRating(playlistId,15)
-                        navController.navigate("OpenPbPlayList/${playlistId.toString()}") },
+                    onClick = {
+                        val playlistId = playlist.id
+                        viewModel.updatePlaylistRating(playlistId, 15)
+                        navController.navigate("OpenPbPlayList/${playlistId.toString()}")
+                    },
                     onLongClick = { scope.launch { sheetState.show() } },
                     interactionSource = remember { MutableInteractionSource() },
                     indication = rememberRipple()

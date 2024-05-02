@@ -61,6 +61,7 @@ fun MyProfileScreen(viewModel: MyProfileScreenViewModel,navController: NavContro
     val playlists by viewModel.playlists.observeAsState(emptyList())
     val vviewModel = PlaylistChartViewModel()
     val us:User? = user
+
     if (user != null) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -87,7 +88,7 @@ fun MyProfileScreen(viewModel: MyProfileScreenViewModel,navController: NavContro
                         modifier = Modifier.padding(start = 30.dp, bottom = 10.dp)
                     )
                     Text(
-                        text = "${us.ratingAuthor.toString()}",
+                        text = if (us.ratingAuthor == 0) "На калибровке" else us.ratingAuthor.toString(),
                         style = TextStyle(
                             fontSize = 36.sp,
                             lineHeight = 44.sp,
