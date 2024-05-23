@@ -8,7 +8,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 
-import androidx.compose.foundation.gestures.detectDragGestures
+
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,13 +42,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.consumeAllChanges
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -152,7 +155,7 @@ fun pbPlayList(navController: NavController, viewModel: pbPlayListViewModel, pla
                 }
             }
             Spacer(modifier = Modifier.height(10.dp))
-            LazyColumn(Modifier.padding(bottom = 65.dp)) {
+            LazyColumn(Modifier.padding(bottom = 65.dp).nestedScroll(rememberNestedScrollInteropConnection())) {
                 items(tracks.size) { index ->
                     val track = tracks[index]
                     TrackItem(track = track,viewModel, playlistId = playlistId)
@@ -163,11 +166,9 @@ fun pbPlayList(navController: NavController, viewModel: pbPlayListViewModel, pla
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalFoundationApi::class
-)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun TrackItem(track: Track,viewModel: pbPlayListViewModel,playlistId: String) {
+fun TrackItem(track: Track, viewModel: pbPlayListViewModel, playlistId: String) {
     val currentUser = FirebaseAuth.getInstance().currentUser
     if (currentUser != null) {
         val userId = currentUser.uid
@@ -175,170 +176,165 @@ fun TrackItem(track: Track,viewModel: pbPlayListViewModel,playlistId: String) {
             viewModel.loadSwipeCount(playlistId, userId)
         }
 
-    val isPlayerVisible by remember { mutableStateOf(false) }
-    val trackId by remember {
-        mutableStateOf(0L)
-    }
-    val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
-    val scope = rememberCoroutineScope()
+        val isPlayerVisible by remember { mutableStateOf(false) }
+        val trackId by remember { mutableStateOf(0L) }
+        val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+        val scope = rememberCoroutineScope()
 
-    val coroutineScope = rememberCoroutineScope()
-    // Используем Animatable для отслеживания смещения карточки
-    val offsetX = remember { Animatable(0f) }
+        val coroutineScope = rememberCoroutineScope()
+        val offsetX = remember { Animatable(0f) }
+        val threshold = 100 // Минимальное расстояние для распознавания свайпа
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 10.dp)
-            .background(color = Color(0xFF000000))
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        val (x, _) = dragAmount
-                        coroutineScope.launch {
-                            offsetX.snapTo(offsetX.value + x)
-                        }// Обновляем смещение карточки
-                    },
-                    onDragEnd = {
-                        // Запускаем анимацию возврата в первоначальное положение внутри корутины
-                        coroutineScope.launch {
-                            offsetX.animateTo(targetValue = 0f)
-                        }
-                        if (offsetX.value > 70f) {
-
-                            // Свайп вправо, увеличиваем рейтинг
-                            viewModel.updatePlaylistRating(playlistId, 25)
-                            viewModel.increaseSwipeCount(playlistId, userId)
-                        } else if (offsetX.value < -70f) {
-                            // Свайп влево, уменьшаем рейтинг
-                            viewModel.updatePlaylistRating(playlistId, -25)
-                            viewModel.increaseSwipeCount(playlistId, userId)
-                        }
-                    }
-                )
-            }
-    ) {
-        // Ваш контент карточки
-        androidx.compose.material.Card(
+        Box(
             modifier = Modifier
-                .padding(start = 20.dp, end = 20.dp)
                 .fillMaxWidth()
-                .combinedClickable(
-                    onClick = {
-
-                    },
-                    onLongClick = { scope.launch { sheetState.show() } },
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = rememberRipple()
-                )
+                .padding(bottom = 10.dp)
                 .background(color = Color(0xFF000000))
-                .offset {
-                    IntOffset(
-                        offsetX.value.roundToInt(),
-                        0
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            coroutineScope.launch {
+                                offsetX.snapTo(offsetX.value + dragAmount)
+                            }
+                        },
+                        onDragEnd = {
+                            coroutineScope.launch {
+                                if (offsetX.value > threshold) {
+                                    viewModel.updatePlaylistRating(playlistId, 25)
+                                    viewModel.increaseSwipeCount(playlistId, userId)
+                                } else if (offsetX.value < -threshold) {
+                                    viewModel.updatePlaylistRating(playlistId, -25)
+                                    viewModel.increaseSwipeCount(playlistId, userId)
+                                }
+                                offsetX.animateTo(targetValue = 0f)
+                            }
+                        },
+                        onDragCancel = {
+                            coroutineScope.launch {
+                                offsetX.animateTo(targetValue = 0f)
+                            }
+                        }
                     )
-                }, // Применяем смещение к карточке
-            elevation = 10.dp,
-            backgroundColor = Color(0xFF000000)
+                }
         ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(horizontalArrangement = Arrangement.Start) {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            model = track.cover ?: "https://shutniks.com/wp-content/uploads/2020/01/unnamed-2.jpg"
-                        ),
-                        contentDescription = "avatar",
-                        contentScale = ContentScale.Crop,            // crop the image if it's not a square
-                        modifier = Modifier
-                            .size(53.dp)
-                            .wrapContentSize()
+            // Ваш контент карточки
+            androidx.compose.material.Card(
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp)
+                    .fillMaxWidth()
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = { scope.launch { sheetState.show() } },
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = rememberRipple()
                     )
-                    Column(Modifier.padding(start = 13.dp)) {
-                        Text(
-                            text = track.title,
-                            style = TextStyle(
-                                fontSize = 16.sp,
-                                lineHeight = 20.sp,
-                                fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                                fontWeight = FontWeight(700),
-                                letterSpacing = 0.96.sp,
-                                color = Color(0xFFFFFFFF)
-                            )
+                    .background(color = Color(0xFF000000))
+                    .offset {
+                        IntOffset(
+                            offsetX.value.roundToInt(),
+                            0
                         )
-                        Text(
-                            text = track.nameArtist,
-                            style = TextStyle(
-                                fontSize = 12.sp,
-                                lineHeight = 15.sp,
-                                fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                                fontWeight = FontWeight(700),
-                                letterSpacing = 0.6000000000000001.sp,
-                                color = Color(0xFF8A9A9D)
+                    },
+                elevation = 10.dp,
+                backgroundColor = Color(0xFF000000)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(horizontalArrangement = Arrangement.Start) {
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = track.cover ?: "https://shutniks.com/wp-content/uploads/2020/01/unnamed-2.jpg"
+                            ),
+                            contentDescription = "avatar",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(53.dp)
+                                .wrapContentSize()
+                        )
+                        Column(Modifier.padding(start = 13.dp)) {
+                            Text(
+                                text = track.title,
+                                style = TextStyle(
+                                    fontSize = 16.sp,
+                                    lineHeight = 20.sp,
+                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                    fontWeight = FontWeight(700),
+                                    letterSpacing = 0.96.sp,
+                                    color = Color(0xFFFFFFFF)
+                                )
                             )
+                            Text(
+                                text = track.nameArtist,
+                                style = TextStyle(
+                                    fontSize = 12.sp,
+                                    lineHeight = 15.sp,
+                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                    fontWeight = FontWeight(700),
+                                    letterSpacing = 0.6000000000000001.sp,
+                                    color = Color(0xFF8A9A9D)
+                                )
+                            )
+                        }
+                    }
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Image(
+                            painter = painterResource(id = R.drawable.option),
+                            contentDescription = "Option Icon",
+                            modifier = Modifier
+                                .width(15.dp)
+                                .height(15.dp)
                         )
                     }
                 }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Image(
-                        painter = painterResource(id = R.drawable.option),
-                        contentDescription = "Option Icon",
-                        modifier = Modifier
-                            .width(15.dp)
-                            .height(15.dp)
+            }
 
+            // Отображение иконок в зависимости от направления свайпа
+            AnimatedVisibility(visible = offsetX.value > 0, modifier = Modifier.align(Alignment.CenterStart)) {
+                Text(
+                    text = "+25",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                        fontWeight = FontWeight(700),
+                        letterSpacing = 0.96.sp,
+                        color = Color(0xFFFFFFFF)
                     )
-                }
+                )
+            }
+            AnimatedVisibility(visible = offsetX.value < 0, modifier = Modifier.align(Alignment.CenterEnd)) {
+                Text(
+                    text = "-25",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                        fontWeight = FontWeight(700),
+                        letterSpacing = 0.96.sp,
+                        color = Color(0xFFFFFFFF)
+                    )
+                )
             }
         }
-
-        // Отображение иконок в зависимости от направления свайпа
-        AnimatedVisibility(visible = offsetX.value > 0, modifier = Modifier.align(Alignment.CenterStart)) {
-            Text(
-                text = "+25",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    lineHeight = 20.sp,
-                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                    fontWeight = FontWeight(700),
-                    letterSpacing = 0.96.sp,
-                    color = Color(0xFFFFFFFF)
-                )
-            )
+        if (sheetState.isVisible) {
+            ModalBottomSheet(
+                onDismissRequest = { scope.launch { sheetState.hide() } }
+            ) {
+                // Содержимое модального щита
+            }
         }
-        AnimatedVisibility(visible = offsetX.value < 0, modifier = Modifier.align(Alignment.CenterEnd)) {
-            Text(
-                text = "-25",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    lineHeight = 20.sp,
-                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                    fontWeight = FontWeight(700),
-                    letterSpacing = 0.96.sp,
-                    color = Color(0xFFFFFFFF)
-                )
-            )
+        if (isPlayerVisible) {
+            MusicPlayerScreen(id = trackId)
         }
-    }
-    if (sheetState.isVisible) {
-        ModalBottomSheet(
-
-            onDismissRequest = { scope.launch { sheetState.hide() } }
-        ) {
-            // Содержимое модального щита
-        }
-    }
-    if (isPlayerVisible) {
-        MusicPlayerScreen(id = trackId)
-    }
-
-    }else{
+    } else {
         Log.e("TAG", "User not logged in")
     }
 }
+
+
 
 
 

@@ -42,7 +42,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+
 
 
 import androidx.compose.ui.unit.dp
@@ -71,7 +71,7 @@ fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit
                 Modifier
                         .fillMaxSize(1f)
                         .background(color = Color(0xFF1E1E1E)), horizontalAlignment = Alignment.CenterHorizontally){
-                Image(painterResource(id = R.drawable.musium_logo),  contentDescription ="" ,
+                Image(painterResource(id = R.drawable.rmlogo),  contentDescription ="" ,
                         Modifier
                                 .padding(top = 76.dp, bottom = 30.dp)
                                 .width(325.dp)

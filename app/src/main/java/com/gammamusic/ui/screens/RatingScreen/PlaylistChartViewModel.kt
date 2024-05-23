@@ -17,7 +17,7 @@ class PlaylistChartViewModel : ViewModel() {
         loadPlaylists()
     }
 
-    private fun loadPlaylists() {
+     fun loadPlaylists() {
         val database = FirebaseDatabase.getInstance()
         val reference = database.getReference("charts/published")
 

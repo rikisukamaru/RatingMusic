@@ -8,8 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,8 +69,9 @@ fun RatingScreen(navController: NavController) {
     val (selectedTab, setSelectedTab) = remember { mutableStateOf(0) }
     val playlistViewModel: PlaylistChartViewModel = viewModel()
     val usersViewModel: UserChatViewModel = viewModel()
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(Unit) {
         usersViewModel.loadTopUsers()
+        playlistViewModel.loadPlaylists()
     }
     Scaffold(
         topBar = {
@@ -108,51 +108,57 @@ fun RatingScreen(navController: NavController) {
         ) {
             when (selectedTab) {
                 0 -> UserRatingChart(userChatViewModel = usersViewModel)
-                1 -> PlaylistChart(playlistViewModel.playlists.value, navController = navController,playlistViewModel)
+                1 -> PlaylistChart(playlistViewModel.playlists.value.sortedByDescending { it.rating }, navController = navController, viewModel = playlistViewModel)
             }
         }
     }
 }
+
 @Composable
 fun UserRatingChart(userChatViewModel: UserChatViewModel) {
     val users by userChatViewModel.users.observeAsState(initial = emptyList())
-
     LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(users) { user ->
+        items(users.sortedByDescending { it.ratingAuthor }) { user ->
             UserCardChart(user)
-
         }
     }
 }
 
 @Composable
 fun UserCardChart(user: User) {
-
     Box(
         Modifier
             .fillMaxWidth()
             .fillMaxHeight(0.1f)
             .background(Color.Black)
-            .padding(start = 25.dp, end = 25.dp)) {
-        Image(painter = rememberAsyncImagePainter(model = user!!.photoUrl)?:painterResource(id = R.drawable.sdf), contentDescription ="", contentScale = ContentScale.Crop ,modifier = Modifier
-            .fillMaxSize()
-            .clip(
-                RoundedCornerShape(16.dp)
-            ))
-        Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    text = user.name,
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        lineHeight = 25.sp,
-                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                        fontWeight = FontWeight(700),
-                        letterSpacing = 1.2.sp,
-                        textAlign = TextAlign.Center,
-                        color = Color(0xFFFFFFFF)
-                    ),
-                    modifier = Modifier.padding(end = 25.dp, start = 9.dp)
-                )
+            .padding(start = 25.dp, end = 25.dp)
+    ) {
+        Image(
+            painter = rememberAsyncImagePainter(model = user.photoUrl) ?: painterResource(id = R.drawable.sdf),
+            contentDescription = "",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(16.dp))
+        )
+        Row(
+            Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = user.name,
+                style = TextStyle(
+                    fontSize = 20.sp,
+                    lineHeight = 25.sp,
+                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                    fontWeight = FontWeight(700),
+                    letterSpacing = 1.2.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFFFFFFFF)
+                ),
+                modifier = Modifier.padding(end = 25.dp, start = 9.dp)
+            )
             Text(
                 text = user.ratingAuthor.toString(),
                 style = TextStyle(
@@ -166,76 +172,59 @@ fun UserCardChart(user: User) {
                 ),
                 modifier = Modifier.padding(end = 25.dp, start = 9.dp)
             )
-
-
-        }
-
-    }
-}
-
-@Composable
-fun PlaylistChart(playlists: List<Playlist>,navController: NavController,viewModel: PlaylistChartViewModel) {
-    LazyColumn (Modifier.padding(bottom = 85.dp)){
-        items(playlists) { playlist ->
-            PlaylistCard(playlist,playlists.indexOf(playlist), navController = navController ,viewModel)
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class,
-    ExperimentalMaterial3Api::class
-)
 @Composable
-fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController,viewModel: PlaylistChartViewModel) {
+fun PlaylistChart(playlists: List<Playlist>, navController: NavController, viewModel: PlaylistChartViewModel) {
+    LazyColumn(Modifier.padding(bottom = 85.dp)) {
+        items(playlists, key = { it.id }) { playlist ->
+            PlaylistCard(playlist, playlists.indexOf(playlist), navController = navController, viewModel = viewModel)
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun PlaylistCard(playlist: Playlist, raitcount: Int, navController: NavController, viewModel: PlaylistChartViewModel) {
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
-    val swipeableState = rememberSwipeableState(initialValue = 0)
-    val anchors = mapOf(0f to 0, 370f to 1, -370f to -1) // Задаем точки привязки для свайпа
     val coroutineScope = rememberCoroutineScope()
-    // Используем Animatable для отслеживания смещения карточки
     val offsetX = remember { Animatable(0f) }
+    val threshold = 100
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(79.dp)
             .background(color = Color(0xCF1E1E1E))
-            .swipeable(
-                state = swipeableState,
-                anchors = anchors,
-                orientation = Orientation.Horizontal,
-                thresholds = { _, _ -> FractionalThreshold(0.5f) }, // Устанавливаем порог свайпа
-                reverseDirection = true // Разрешаем свайп в обоих направлениях
-            )
             .pointerInput(Unit) {
-                detectDragGestures(
-                    onDrag = { change, dragAmount ->
+                detectHorizontalDragGestures(
+                    onHorizontalDrag = { change, dragAmount ->
                         change.consume()
-                        val (x, _) = dragAmount
                         coroutineScope.launch {
-                            offsetX.snapTo(offsetX.value + x)
-                        }// Обновляем смещение карточки
+                            offsetX.snapTo(offsetX.value + dragAmount)
+                        }
                     },
                     onDragEnd = {
-                        // Запускаем анимацию возврата в первоначальное положение внутри корутины
                         coroutineScope.launch {
+                            if (offsetX.value > threshold) {
+                                viewModel.updatePlaylistRating(playlist.id, 50)
+                            } else if (offsetX.value < -threshold) {
+                                viewModel.updatePlaylistRating(playlist.id, -50)
+                            }
                             offsetX.animateTo(targetValue = 0f)
                         }
-                        if (offsetX.value > 70f) {
-
-                            // Свайп вправо, увеличиваем рейтинг
-                            viewModel.updatePlaylistRating(playlist.id, 15)
-
-                        } else if (offsetX.value < -70f) {
-                            // Свайп влево, уменьшаем рейтинг
-                            viewModel.updatePlaylistRating(playlist.id, -15)
-
+                    },
+                    onDragCancel = {
+                        coroutineScope.launch {
+                            offsetX.animateTo(targetValue = 0f)
                         }
                     }
                 )
             }
     ) {
-        // Ваш контент карточки
         Card(
             modifier = Modifier
                 .padding(start = 20.dp, end = 20.dp)
@@ -245,20 +234,20 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController,
                     onClick = {
                         val playlistId = playlist.id
                         viewModel.updatePlaylistRating(playlistId, 15)
-                        navController.navigate("OpenPbPlayList/${playlistId.toString()}")
+                        navController.navigate("OpenPbPlayList/${playlistId}")
                     },
                     onLongClick = { scope.launch { sheetState.show() } },
                     interactionSource = remember { MutableInteractionSource() },
                     indication = rememberRipple()
                 )
                 .background(color = Color(0xCF1E1E1E))
-                .offset { IntOffset(offsetX.value.roundToInt(), 0) }, // Применяем смещение к карточке
+                .offset { IntOffset(offsetX.value.roundToInt(), 0) },
             elevation = 10.dp,
             backgroundColor = Color(0xCF1E1E1E)
         ) {
             Row(horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "#${1+raitcount}",
+                    text = "#${raitcount + 1}",
                     style = TextStyle(
                         fontSize = 20.sp,
                         lineHeight = 25.sp,
@@ -270,15 +259,18 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController,
                     ),
                     modifier = Modifier.padding(end = 25.dp, start = 9.dp)
                 )
-                Image(painter = rememberAsyncImagePainter(playlist.photoUrl), contentDescription ="",
+                Image(
+                    painter = rememberAsyncImagePainter(playlist.photoUrl),
+                    contentDescription = "",
                     modifier = Modifier
                         .padding(end = 37.dp)
                         .height(52.dp)
-                        .width(53.dp))
+                        .width(53.dp)
+                )
 
                 Column {
                     Text(
-                        text = "${playlist.name}",
+                        text = playlist.name!!,
                         style = TextStyle(
                             fontSize = 17.sp,
                             lineHeight = 21.sp,
@@ -303,10 +295,9 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController,
             }
         }
 
-        // Отображение иконок в зависимости от направления свайпа
         AnimatedVisibility(visible = offsetX.value > 0, modifier = Modifier.align(Alignment.CenterStart)) {
             androidx.compose.material3.Text(
-                text = "+25",
+                text = "+50",
                 style = TextStyle(
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
@@ -319,7 +310,7 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController,
         }
         AnimatedVisibility(visible = offsetX.value < 0, modifier = Modifier.align(Alignment.CenterEnd)) {
             androidx.compose.material3.Text(
-                text = "-25",
+                text = "-50",
                 style = TextStyle(
                     fontSize = 16.sp,
                     lineHeight = 20.sp,
@@ -333,13 +324,13 @@ fun PlaylistCard(playlist: Playlist, raitcount:Int,navController: NavController,
     }
     if (sheetState.isVisible) {
         ModalBottomSheet(
-
             onDismissRequest = { scope.launch { sheetState.hide() } }
         ) {
             // Содержимое модального щита
         }
     }
 }
+
 
 
 

@@ -1,7 +1,6 @@
 package com.gammamusic.ui.screens.MyNewMusicScreen
 
-import android.util.Log
-import androidx.compose.runtime.mutableStateOf
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -24,7 +23,7 @@ class MyProfileScreenViewModel : ViewModel() {
         loadUserPlaylists()
     }
 
-    private fun loadUserDetails() {
+     fun loadUserDetails() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser!= null) {
             val userId = currentUser.uid

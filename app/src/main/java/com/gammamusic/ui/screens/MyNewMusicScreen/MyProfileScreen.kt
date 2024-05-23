@@ -27,6 +27,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -61,7 +62,9 @@ fun MyProfileScreen(viewModel: MyProfileScreenViewModel,navController: NavContro
     val playlists by viewModel.playlists.observeAsState(emptyList())
     val vviewModel = PlaylistChartViewModel()
     val us:User? = user
-
+    LaunchedEffect(Unit) {
+        viewModel.loadUserDetails()
+    }
     if (user != null) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -174,47 +177,57 @@ fun MyProfileScreen(viewModel: MyProfileScreenViewModel,navController: NavContro
 
 
 @Composable
-fun MyProfileCard(playlist: Playlist, raitcount:Int, navController: NavController, viewModel: PlaylistChartViewModel) {
+fun MyProfileCard(
+    playlist: Playlist,
+    raitcount:Int,
+    navController: NavController,
+    viewModel: PlaylistChartViewModel
+) {
     Box(modifier = Modifier
         .background(Color.Black)
         .padding(start = 30.dp, top = 20.dp)
-        )
-    Column (
-        Modifier
-            .padding(top = 20.dp)
-            .clickable {
-                val playlistId = playlist.id
-                viewModel.updatePlaylistRating(playlistId, 15)
-                navController.navigate("OpenPbPlayList/${playlistId.toString()}")
-            } ){
-        Image(painter = rememberAsyncImagePainter(model = playlist.photoUrl), contentDescription = "", contentScale = ContentScale.FillHeight,modifier =
-        Modifier
-            .width(119.dp)
-            .height(140.dp)
-            .clip(RoundedCornerShape(15.dp)))
-        Text(
-            text = playlist.name!!,
-            style = TextStyle(
-                fontSize = 12.sp,
-                lineHeight = 15.sp,
-                fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                fontWeight = FontWeight(1000),
-                textAlign = TextAlign.Center,
-                        color = Color(0xFFCBC8C8)
+    ) {
+        Column (
+            Modifier.padding(top = 20.dp)
+                .clickable {
+                    val playlistId = playlist.id
+                    viewModel.updatePlaylistRating(playlistId, 15)
+                    navController.navigate("OpenPbPlayList/${playlistId}")
+                }
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(model = playlist.photoUrl),
+                contentDescription = "",
+                contentScale = ContentScale.FillHeight,
+                modifier = Modifier
+                    .width(119.dp)
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(15.dp))
             )
-        )
-        Text(
-            text = "Рейтинг:#${1+raitcount}",
-            style = TextStyle(
-                fontSize = 10.sp,
-                lineHeight = 12.sp,
-                fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                fontWeight = FontWeight(400),
-                textAlign = TextAlign.Center,
-                color = Color(0xFF847D7D)
+            Text(
+                text = playlist.name!!,
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    lineHeight = 15.sp,
+                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                    fontWeight = FontWeight(1000),
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFFCBC8C8)
+                )
             )
-        )
+            Text(
+                text = "Рейтинг:#${1 + raitcount}",
+                style = TextStyle(
+                    fontSize = 10.sp,
+                    lineHeight = 12.sp,
+                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                    fontWeight = FontWeight(400),
+                    textAlign = TextAlign.Center,
+                    color = Color(0xFF847D7D)
+                )
+            )
+        }
     }
-
 }
+
 
