@@ -16,16 +16,19 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 
 import androidx.compose.ui.draw.scale
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 
 import androidx.compose.ui.res.painterResource
 
 import androidx.compose.ui.unit.dp
 
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.gammamusic.R
 import kotlinx.coroutines.delay
 
@@ -60,6 +63,12 @@ fun SplashScreen(navcontroller:NavController) {
         navcontroller.navigate("LOGIN")
     }
     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().background(Color.Black)) {
+        Image(
+            painter = rememberAsyncImagePainter(model = R.drawable.loginbh),
+            contentDescription = "",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize().blur(radius = 7.dp)
+        )
         Image(
             painter = painterResource(id = R.drawable.rmlogo),
             contentDescription = "logo",
