@@ -59,9 +59,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.gammamusic.R
 import com.gammamusic.presentation.sign_in.SignInState
 
-
-
-
 @Composable
 fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit) {
         val context = LocalContext.current
