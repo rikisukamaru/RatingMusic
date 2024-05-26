@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,12 +39,14 @@ import androidx.compose.material.icons.filled.Delete
 
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 
@@ -61,6 +63,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
@@ -162,82 +165,247 @@ fun MyMusicScreen(
                     }
 
         } else {
-            TextField(
-                value = searchText,
-                onValueChange = { newText ->
-                    searchText = newText
-                    viewModel.searchQuery.value = newText
-                    if (newText.isBlank()) {
-                        viewModel.clearSearchResults()
-                    } else {
-                        viewModel.search(newText)
-                    }
-                },
-                label = { Text("Search") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.search),
-                        contentDescription = "Search Icon",
-                        modifier = Modifier
-                            .width(20.dp)
-                            .height(20.dp)
-                    )
-                },
-                trailingIcon = {
-                    if (searchText.isNotEmpty()) {
-                        IconButton(onClick = { searchText = "" }) {
-                            Icon(Icons.Filled.Close, contentDescription = "Clear Search")
-                        }
-                    }
-                },
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF5D1134), Color(0xFF14140E)),
+                            start = Offset.Zero,
+                            end = Offset(0f, 500f)
+                        )
+                    )
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
 
-            )
-            LazyColumn(Modifier.fillMaxSize()) {
-                items(searchState) { item: Search ->
-                    Card(
-                        onClick = {
-                            isPlayerVisible = true
-                            trackId = item.id
+                ) {
+                    // Search bar
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.rmlogo),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .width(50.dp)
+                                .height(50.dp)
+
+                        )
+                        Text(
+                            text = "Поиск",
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                lineHeight = 29.sp,
+                                fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                fontWeight = FontWeight(700),
+                                color = Color(0xFFFFFFFF),
+                                shadow = Shadow(
+                                    color = Color(0xFFE80B7C),
+                                    offset = Offset(0f, 10f),
+                                    blurRadius = 6f
+                                )
+                            )
+                        )
+                    }
+
+                    // Search field
+                    TextField(
+                        value = searchText,
+                        onValueChange = { newText ->
+                            searchText = newText
+                            viewModel.searchQuery.value = newText
+                            if (newText.isBlank()) {
+                                viewModel.clearSearchResults()
+                            } else {
+                                viewModel.search(newText)
+                            }
+                        },
+                        textStyle = TextStyle(
+                            fontSize = 14.sp,
+                            lineHeight = 21.sp,
+                            fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.02.sp
+                        ),
+                        label = { Text("Песни,Артисты и Жанры", style = TextStyle(
+                            fontSize = 12.sp,
+                            lineHeight = 21.sp,
+                            fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.02.sp,
+                            color = Color.White
+                        ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis) },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.search),
+                                contentDescription = "Search Icon",
+                                modifier = Modifier
+                                    .width(20.dp)
+                                    .height(20.dp)
+                            )
+                        },
+                        trailingIcon = {
+                            if (searchText.isNotEmpty()) {
+                                IconButton(onClick = { searchText = "" }) {
+                                    Icon(Icons.Filled.Close, contentDescription = "Clear Search")
+                                }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 5.dp)
-                            .height(40.dp)
-                            .background(Color.White)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Image(
-                                painter = rememberAsyncImagePainter(
-                                    model = item.album.cover_medium
-                                        ?: "https://shutniks.com/wp-content/uploads/2020/01/unnamed-2.jpg"
+                            .padding(vertical = 8.dp)
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(Color(0xFFD9D9D9)),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = Color(0xFFD9D9D9),
+                            textColor = Color.Black,
+                            cursorColor = Color.Black,
+                            focusedIndicatorColor = Color.White,
+                            unfocusedIndicatorColor = Color.Transparent
+                        )
+                    )
+
+                    if (searchText.isNotBlank()) {
+                        LazyColumn(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(bottom = 70.dp)) {
+                            items(searchState) { item: Search ->
+                                Card(
+                                    onClick = {
+                                        trackId = item.id
+                                        isPlayerVisible = true
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 5.dp)
+                                        .height(80.dp) // Adjusted height for better display
+                                        ,
+                                    colors= CardDefaults.cardColors(containerColor = Color.Transparent)
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(
+                                                model = item.album.cover_medium
+                                                    ?: "https://shutniks.com/wp-content/uploads/2020/01/unnamed-2.jpg"
+                                            ),
+                                            contentDescription = "avatar",
+                                            contentScale = ContentScale.Crop, // crop the image if it's not a square
+                                            modifier = Modifier
+                                                .size(80.dp) // Adjusted size for better display
+                                                .clip(RoundedCornerShape(8.dp))
+                                        )
+
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(8.dp)
+                                                .weight(1f) // Ensures the text takes available space
+                                        ) {
+                                            Text(
+                                                text = item.title,
+                                                style = TextStyle(
+                                                    fontSize = 16.sp,
+                                                    lineHeight = 21.sp,
+                                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                                    fontWeight = FontWeight.Bold,
+                                                    letterSpacing = 1.02.sp,
+                                                    color = Color.White
+                                                ),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+
+                                            Text(
+                                                text = item.artist.name,
+                                                style = TextStyle(
+                                                    fontSize = 16.sp,
+                                                    lineHeight = 21.sp,
+                                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                                    fontWeight = FontWeight.Bold,
+                                                    letterSpacing = 1.02.sp,
+                                                    color = Color.White
+                                                ),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+
+                                        IconButton(onClick = {
+                                            viewModel.addSearchToUserCollection(
+                                                item
+                                            )
+                                        }) {
+                                            Icon(
+                                                Icons.Filled.Add,
+                                                contentDescription = "Добавить в мою коллекцию"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else{
+
+                            Text(
+                                text = "Твои любимые жанры",
+                                style = TextStyle(
+                                    fontSize = 20.sp,
+                                    lineHeight = 21.sp,
+                                    fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.02.sp,
+                                    color = Color.White
                                 ),
-                                contentDescription = "avatar",
-                                contentScale = ContentScale.Crop,            // crop the image if it's not a square
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier
-                                    .size(40.dp)
-                                    .wrapContentSize()   // add a border (optional)
+                                    .align(Alignment.Start)
+                                    .padding(start = 12.dp, top = 16.dp)
+                            )
+                            Image(painter = rememberAsyncImagePainter(model = R.drawable.top), contentDescription = "",
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .fillMaxHeight(0.42f)
+                                    .fillMaxWidth()
+                                    .padding(top = 17.dp))
+
+                            Text(
+                                text = "Все подборки",
+                                style = TextStyle(
+                                    fontSize = 20.sp,
+                                    lineHeight = 21.sp,
+                                    fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.02.sp,
+                                    color = Color.White
+                                ),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .align(Alignment.Start)
+                                    .padding(start = 12.dp, top = 10.dp)
                             )
 
-                            Column {
-                                Text(text = item.title)
-                                Text(text = item.artist.name)
-                            }
-
-                            IconButton(onClick = { viewModel.addSearchToUserCollection(item) }) {
-                                Icon(
-                                    Icons.Filled.Add,
-                                    contentDescription = "Добавить в мою коллекцию"
-                                )
-                            }
-
+                            Image(painter = rememberAsyncImagePainter(model = R.drawable.group), contentDescription = "",
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .fillMaxHeight(0.79f)
+                                    .fillMaxWidth()
+                                    )
                         }
 
-                    }
 
                 }
             }
@@ -332,7 +500,10 @@ fun MyMus(viewModel: MyMusicCollectionViewModel){
         mutableStateOf(0L)
     }
 
-        LazyColumn (Modifier.background(Color.Black)){
+        LazyColumn (
+            Modifier
+                .background(Color.Black)
+                .padding(bottom = 65.dp)){
             itemsIndexed(searches) { index, search ->
                 androidx.compose.material. Card(
                     onClick = {
@@ -369,9 +540,9 @@ fun MyMus(viewModel: MyMusicCollectionViewModel){
                             Text(
                                 text = search.title,
                                 style = TextStyle(
-                                    fontSize = 17.sp,
+                                    fontSize = 16.sp,
                                     lineHeight = 21.sp,
-                                    fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.02.sp,
                                     color = Color.White
@@ -382,9 +553,9 @@ fun MyMus(viewModel: MyMusicCollectionViewModel){
                             Text(
                                 text = search.artist.name,
                                 style = TextStyle(
-                                    fontSize = 14.sp,
+                                    fontSize = 13.sp,
                                     lineHeight = 17.sp,
-                                    fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 0.7.sp,
                                     color = Color(0xFF8A9A9D)
@@ -442,7 +613,7 @@ fun myPl(navController: NavController){
                     .fillMaxWidth()
                     .background(Color.Black)
                     .fillMaxHeight()
-                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 65.dp)
             ) {
                 itemsIndexed(playlists) { index, playlist ->
                     androidx.compose.material.Card(
@@ -478,10 +649,10 @@ fun myPl(navController: NavController){
                                 Text(
                                     text = playlist.name!!,
                                     style = TextStyle(
-                                        fontSize = 21.sp,
+                                        fontSize = 17.sp,
                                         lineHeight = 17.sp,
-                                        fontFamily = FontFamily(Font(R.font.inter_bold)),
-                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                        fontWeight = FontWeight.ExtraLight,
                                         letterSpacing = 1.02.sp,
                                         color = Color.White
                                     ),
@@ -491,10 +662,10 @@ fun myPl(navController: NavController){
                                 Text(
                                     text = playlist.genre!!,
                                     style = TextStyle(
-                                        fontSize = 17.sp,
+                                        fontSize = 14.sp,
                                         lineHeight = 17.sp,
-                                        fontFamily = FontFamily(Font(R.font.inter_bold)),
-                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                        fontWeight = FontWeight.Light,
                                         letterSpacing = 1.02.sp,
                                         color = Color(0xFF6E7172)
                                     ),
