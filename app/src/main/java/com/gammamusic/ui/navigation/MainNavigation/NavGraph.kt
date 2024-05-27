@@ -43,7 +43,7 @@ fun NavGraph(navHostController: NavHostController) {
             composable("PlayList/{playlistId}") { backStackEntry ->
                 val playlistId = backStackEntry.arguments?.getString("playlistId")
                 // Создайте экземпляр PlayListViewModel и передайте playlistId
-                PlayListScreen(viewModel = playListViewModel, selectedPlaylistId = playlistId.orEmpty())
+                PlayListScreen(viewModel = playListViewModel, navHostController,selectedPlaylistId = playlistId.orEmpty())
             }
             composable(route = "OpenPbPlayList/{playlistId}"){backStackEntry ->
                 val playlistId = backStackEntry.arguments?.getString("playlistId")?: return@composable

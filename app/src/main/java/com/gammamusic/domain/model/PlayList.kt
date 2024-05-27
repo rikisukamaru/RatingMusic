@@ -10,7 +10,7 @@ data class Playlist(
     var tracklist: Map<String,Track> = mapOf(),
     var rating: Int = 0,
     var userId: String? = null,
-    var published: Boolean = true,
+    var published: Boolean = false,
     var swipeCounts: Map<String, Int>? = null,
 
 )

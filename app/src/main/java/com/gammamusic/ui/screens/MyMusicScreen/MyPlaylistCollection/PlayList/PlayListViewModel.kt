@@ -1,5 +1,6 @@
 package com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -21,6 +22,8 @@ class PlayListViewModel:ViewModel(){
     val trakes: LiveData<List<Track>> get() = _tracks
     private val _publishedPlaylistCount = MutableLiveData<Int>()
 
+    private val _playlist = MutableLiveData<Playlist?>()
+    val playlist: MutableLiveData<Playlist?> = _playlist
 
     private val _totalRating = MutableLiveData<Int>()
 
@@ -51,7 +54,39 @@ class PlayListViewModel:ViewModel(){
             })
         }
     }
+    fun loadPlayList(playlistId: String) {
+        // Получить ссылку на плейлисты в Firebase Realtime Database
+        val playlistsRef = FirebaseDatabase.getInstance().getReference("users/${FirebaseAuth.getInstance().currentUser?.uid}/playlists")
 
+        // Создать запрос для поиска плейлиста по id
+        val query = playlistsRef.orderByChild("id").equalTo(playlistId)
+
+        // Добавить слушателя изменений
+        query.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                Log.e(dataSnapshot.toString(), "onDataChange")
+                var playlistData: Playlist? = null
+                for (snapshot in dataSnapshot.children) {
+                    val playlist = snapshot.getValue(Playlist::class.java)
+                    if (playlist?.id == playlistId) {
+                        playlistData = playlist
+                        break
+                    }
+                }
+                if (playlistData != null) {
+                    _playlist.value = playlistData
+                    _tracks.value = playlistData.tracklist.values.toList()
+                } else {
+                    Log.e("PbPlayListViewModel", "Плейлист с id $playlistId не найден")
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Обработать ошибку
+                Log.w("PbPlayListViewModel", "Ошибка загрузки плейлиста: ${databaseError.message}")
+            }
+        })
+    }
 
     fun publishSelectedPlaylist(playlistId: String) {
         val user = FirebaseAuth.getInstance().currentUser
@@ -101,8 +136,12 @@ class PlayListViewModel:ViewModel(){
                             val playlist = snapshot.getValue(Playlist::class.java)
                             if (playlist != null) {
                                 playlist.userId = user.uid
+                                playlist.published = true // Обновление состояния публикации
                                 val reference = database.getReference("charts/published").push()
                                 reference.setValue(playlist)
+
+                                // Обновление состояния публикации в локальной копии плейлиста
+                                playlistRef.child("published").setValue(true)
                             } else {
                                 // Обработка ошибки преобразования данных
                             }
@@ -122,6 +161,7 @@ class PlayListViewModel:ViewModel(){
             // Обработка ошибки авторизации
         }
     }
+
 
 
     fun addSongToPlaylist(songId: Long,title:String,preview:String,nameArtist:String,idArtist:Long,cover:String, playlistId: String) {
@@ -160,29 +200,6 @@ class PlayListViewModel:ViewModel(){
             }
         })
     }
-    fun loadPlaylist(playlistId: String) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        if (userId != null) {
-            val database = Firebase.database
-            val playlistRef = database.getReference("users/$userId/playlists/$playlistId/tracklist")
 
-            playlistRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val trackList = mutableListOf<Track>()
-                    for (trackSnapshot in dataSnapshot.children) {
-                        val track = trackSnapshot.getValue(Track::class.java)
-                        if (track != null) {
-                            trackList.add(track)
-                        }
-                    }
-                    _tracks.value = trackList
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Обработка ошибки
-                }
-            })
-        }
-    }
 
 }

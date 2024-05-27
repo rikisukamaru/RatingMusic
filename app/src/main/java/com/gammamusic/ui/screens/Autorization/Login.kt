@@ -124,7 +124,7 @@ fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit
                                         )
                                         Text(
                                                 text = "Продолжить с Google", style = TextStyle(
-                                                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                                        fontFamily = FontFamily(Font(R.font.codenext_book)),
                                                         fontWeight = FontWeight(700),
                                                         letterSpacing = 0.8.sp,
                                                         textAlign = TextAlign.Center,
@@ -145,8 +145,8 @@ fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit
 
                                                 )
                                                 Text(
-                                                        text = "Прододжить через логин", style = TextStyle(
-                                                                fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                                        text = "Продолжить через логин", style = TextStyle(
+                                                                fontFamily = FontFamily(Font(R.font.codenext_book)),
                                                                 fontWeight = FontWeight(700),
                                                                 letterSpacing = 0.8.sp,
                                                                 textAlign = TextAlign.Center,
@@ -163,7 +163,7 @@ fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit
                                                         style = TextStyle(
                                                                 fontSize = 16.sp,
                                                                 lineHeight = 1.1.sp,
-                                                                fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                                                fontFamily = FontFamily(Font(R.font.codenext_book)),
                                                                 fontWeight = FontWeight(700),
                                                                 letterSpacing = 0.8.sp,
                                                                 textAlign = TextAlign.Center,
@@ -175,7 +175,7 @@ fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit
                                                         style = TextStyle(
                                                                 fontSize = 16.sp,
                                                                 lineHeight = 1.1.sp,
-                                                                fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                                                fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
                                                                 fontWeight = FontWeight(700),
                                                                 letterSpacing = 0.8.sp,
                                                                 textAlign = TextAlign.Center,

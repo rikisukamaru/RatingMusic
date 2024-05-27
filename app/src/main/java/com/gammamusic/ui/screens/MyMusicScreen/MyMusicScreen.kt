@@ -125,31 +125,30 @@ fun MyMusicScreen(
                     Row(
                         Modifier
                             .background(Color.Black)
-                            .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.Top
+                            .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.rmlogo),
-                            contentDescription = "",
-                            modifier = Modifier
-                                .width(50.dp)
-                                .height(50.dp)
+                        Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 10.dp)) {
+                            Image(
+                                painter = painterResource(id = R.drawable.rmlogo),
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .width(50.dp)
+                                    .height(50.dp)
 
-                        )
-                        Text(
-                            text = "Ваша библиотека",
-                            style = TextStyle(
-                                fontSize = 24.sp,
-                                lineHeight = 29.sp,
-                                fontFamily = FontFamily(Font(R.font.inter_bold)),
-                                fontWeight = FontWeight(700),
-                                color = Color(0xFFFFFFFF),
-                                shadow = Shadow(
-                                    color = Color(0xFFE80B7C),
-                                    offset = Offset(0f, 10f),
-                                    blurRadius = 6f
-                                )
-                            ), modifier = Modifier.padding(top=5.dp)
-                        )
+                            )
+                            Text(
+                                text = "Библиотека",
+                                style = TextStyle(
+                                    fontSize = 24.sp,
+                                    lineHeight = 29.sp,
+                                    fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
+                                    fontWeight = FontWeight(700),
+                                    color = Color(0xFFFFFFFF),
+
+                                ), modifier = Modifier.padding(top=5.dp)
+                            )
+                        }
+
                         IconButton(onClick = { isSearchExpanded = true }) {
                             Image(
                                 painter = painterResource(id = R.drawable.search),
@@ -157,6 +156,7 @@ fun MyMusicScreen(
                                 modifier = Modifier
                                     .width(20.dp)
                                     .height(20.dp)
+
 
 
                             )
@@ -202,7 +202,7 @@ fun MyMusicScreen(
                             style = TextStyle(
                                 fontSize = 24.sp,
                                 lineHeight = 29.sp,
-                                fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
                                 fontWeight = FontWeight(700),
                                 color = Color(0xFFFFFFFF),
                                 shadow = Shadow(
@@ -317,7 +317,7 @@ fun MyMusicScreen(
                                                 style = TextStyle(
                                                     fontSize = 16.sp,
                                                     lineHeight = 21.sp,
-                                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                                    fontFamily = FontFamily(Font(R.font.codenext_book)),
                                                     fontWeight = FontWeight.Bold,
                                                     letterSpacing = 1.02.sp,
                                                     color = Color.White
@@ -331,7 +331,7 @@ fun MyMusicScreen(
                                                 style = TextStyle(
                                                     fontSize = 16.sp,
                                                     lineHeight = 21.sp,
-                                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                                    fontFamily = FontFamily(Font(R.font.codenext_book)),
                                                     fontWeight = FontWeight.Bold,
                                                     letterSpacing = 1.02.sp,
                                                     color = Color.White
@@ -342,12 +342,11 @@ fun MyMusicScreen(
                                         }
 
                                         IconButton(onClick = {
-                                            viewModel.addSearchToUserCollection(
-                                                item
-                                            )
-                                        }) {
+                                            viewModel.addSearchToUserCollection(item)
+                                        },modifier = Modifier.align(Alignment.CenterVertically)) {
                                             Icon(
                                                 Icons.Filled.Add,
+                                                tint = Color.White,
                                                 contentDescription = "Добавить в мою коллекцию"
                                             )
                                         }
@@ -363,7 +362,7 @@ fun MyMusicScreen(
                                 style = TextStyle(
                                     fontSize = 20.sp,
                                     lineHeight = 21.sp,
-                                    fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                    fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.02.sp,
                                     color = Color.White
@@ -386,7 +385,7 @@ fun MyMusicScreen(
                                 style = TextStyle(
                                     fontSize = 20.sp,
                                     lineHeight = 21.sp,
-                                    fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                    fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.02.sp,
                                     color = Color.White
@@ -420,44 +419,36 @@ fun MyMusicScreen(
                         TabRow(
                             selectedTabIndex = selectedTab,
                             backgroundColor = Color.Black,
-                            contentColor = Color(0xFFE80B7C),
+                            contentColor = Color(0xFFE91E63),
 
                         ) {
                             Tab(
                                 text = { androidx.compose.material.Text("Музыка", style = (androidx.compose.material3.MaterialTheme.typography.bodyLarge).copy(fontSize = 16.sp,
                                     lineHeight = 20.sp,
-                                    fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                    fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
                                     fontWeight = FontWeight(1000),
                                     letterSpacing = 0.96.sp,
                                     textAlign = TextAlign.Center,
-                                    shadow = Shadow(
-                                        color = Color(0xFFE80B7C),
-                                        offset = Offset(2f, 2f),
-                                        blurRadius = 10f
-                                    )
+
 
                                         ))},
                                 selected = selectedTab == 0,
+
                                 onClick = { setSelectedTab(0) },
-                                selectedContentColor = Color(0xFFE80B7C),
+
                                 unselectedContentColor = Color.White
 
                             )
                             Tab(
                                 text = { androidx.compose.material.Text("Плейлисты",style = (androidx.compose.material3.MaterialTheme.typography.bodyLarge).copy(fontSize = 16.sp,
                                     lineHeight = 20.sp,
-                                    fontFamily = FontFamily(Font(R.font.inter_bold)),
+                                    fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
                                     fontWeight = FontWeight(1000),
                                     letterSpacing = 0.96.sp,
                                     textAlign = TextAlign.Center,
-                                    shadow = Shadow(
-                                        color = Color(0xFFE80B7C),
-                                        offset = Offset(2f, 2f),
-                                        blurRadius = 10f
-                                    )
+
                                 ))},
                                 selected = selectedTab == 1,
-                                selectedContentColor = Color(0xFFE80B7C),
                                 unselectedContentColor = Color.White,
                                 onClick = { setSelectedTab(1) }
 
@@ -492,29 +483,31 @@ fun MyMusicScreen(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun MyMus(viewModel: MyMusicCollectionViewModel){
+fun MyMus(viewModel: MyMusicCollectionViewModel) {
     val searches by viewModel.searches.observeAsState(emptyList())
     var isPlayerVisible by remember { mutableStateOf(false) }
 
-    var trackId by remember{
+    var trackId by remember {
         mutableStateOf(0L)
     }
+    Box(Modifier.fillMaxSize().background(Color.Black)) {
 
-        LazyColumn (
+
+        LazyColumn(
             Modifier
-                .background(Color.Black)
-                .padding(bottom = 65.dp)){
+                .background(color = Color(0xCF000000))
+                .padding(bottom = 65.dp)
+        ) {
             itemsIndexed(searches) { index, search ->
-                androidx.compose.material. Card(
+                androidx.compose.material.Card(
                     onClick = {
-                        isPlayerVisible=true
+                        isPlayerVisible = true
                         trackId = search.id
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp)
-                        .background(color = Color(0xCF000000)),
-                    elevation = 10.dp,
+                        .padding(4.dp),
+
                     backgroundColor = Color(0xCF000000)
                 ) {
                     Row(
@@ -525,7 +518,10 @@ fun MyMus(viewModel: MyMusicCollectionViewModel){
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
-                            painter = rememberAsyncImagePainter(model = search.album.cover_medium ?: "https://shutniks.com/wp-content/uploads/2020/01/unnamed-2.jpg"),
+                            painter = rememberAsyncImagePainter(
+                                model = search.album.cover_medium
+                                    ?: "https://shutniks.com/wp-content/uploads/2020/01/unnamed-2.jpg"
+                            ),
                             contentDescription = null,
                             modifier = Modifier
                                 .padding(end = 16.dp)
@@ -542,7 +538,7 @@ fun MyMus(viewModel: MyMusicCollectionViewModel){
                                 style = TextStyle(
                                     fontSize = 16.sp,
                                     lineHeight = 21.sp,
-                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                    fontFamily = FontFamily(Font(R.font.codenext_book)),
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 1.02.sp,
                                     color = Color.White
@@ -555,7 +551,7 @@ fun MyMus(viewModel: MyMusicCollectionViewModel){
                                 style = TextStyle(
                                     fontSize = 13.sp,
                                     lineHeight = 17.sp,
-                                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                    fontFamily = FontFamily(Font(R.font.codenext_book)),
                                     fontWeight = FontWeight.Bold,
                                     letterSpacing = 0.7.sp,
                                     color = Color(0xFF8A9A9D)
@@ -576,12 +572,14 @@ fun MyMus(viewModel: MyMusicCollectionViewModel){
                         }
                     }
                 }
-    
+
             }
         }
-    if (isPlayerVisible) {
-        MusicPlayerScreen(id = trackId)
     }
+
+        if (isPlayerVisible) {
+            MusicPlayerScreen(id = trackId)
+        }
 }
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
@@ -651,7 +649,7 @@ fun myPl(navController: NavController){
                                     style = TextStyle(
                                         fontSize = 17.sp,
                                         lineHeight = 17.sp,
-                                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                        fontFamily = FontFamily(Font(R.font.codenext_book)),
                                         fontWeight = FontWeight.ExtraLight,
                                         letterSpacing = 1.02.sp,
                                         color = Color.White
@@ -664,7 +662,7 @@ fun myPl(navController: NavController){
                                     style = TextStyle(
                                         fontSize = 14.sp,
                                         lineHeight = 17.sp,
-                                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                        fontFamily = FontFamily(Font(R.font.codenext_book)),
                                         fontWeight = FontWeight.Light,
                                         letterSpacing = 1.02.sp,
                                         color = Color(0xFF6E7172)
