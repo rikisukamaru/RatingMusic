@@ -12,6 +12,7 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 
@@ -34,6 +36,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+
 
 import androidx.compose.ui.graphics.Color
 
@@ -73,112 +76,223 @@ fun RatingScreen(navController: NavController) {
         usersViewModel.loadTopUsers()
         playlistViewModel.loadPlaylists()
     }
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Мой чарт") },
-                backgroundColor = Color.Black,
-                contentColor = Color.White,
-                actions = {
-                    TabRow(
-                        selectedTabIndex = selectedTab,
+    Column(
+        modifier = Modifier
+            .fillMaxSize()) {
+
+            Row(
+                Modifier
+                    .background(Color.Black)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(start = 10.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.rmlogo),
+                        contentDescription = "",
+                        modifier = Modifier
+                            .width(50.dp)
+                            .height(50.dp)
+
+                    )
+                    androidx.compose.material3.Text(
+                        text = "Рейтинг",
+                        style = TextStyle(
+                            fontSize = 24.sp,
+                            lineHeight = 29.sp,
+                            fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
+                            fontWeight = FontWeight(700),
+                            color = Color(0xFFFFFFFF),
+
+                            ), modifier = Modifier.padding(top = 5.dp)
+                    )
+                }
+
+                androidx.compose.material3.IconButton(onClick = { }) {
+                    Image(
+                        painter = painterResource(id = R.drawable.search),
+                        contentDescription = "Search Icon",
+                        modifier = Modifier
+                            .width(20.dp)
+                            .height(20.dp)
+
+
+                    )
+                }
+
+            }
+
+
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { androidx.compose.material.Text("Рейтинг") },
                         backgroundColor = Color.Black,
-                        contentColor = Color.White
-                    ) {
-                        Tab(
-                            text = { Text("Рейтинг пользователей") },
-                            selected = selectedTab == 0,
-                            onClick = { setSelectedTab(0) }
+                        contentColor = Color.White,
+                        actions = {
+                            TabRow(
+                                selectedTabIndex = selectedTab,
+                                backgroundColor = Color.Black,
+                                contentColor = Color(0xFFE91E63),
+
+                                ) {
+                                Tab(
+                                    text = { androidx.compose.material.Text("Авторы", style = (androidx.compose.material3.MaterialTheme.typography.bodyLarge).copy(fontSize = 16.sp,
+                                        lineHeight = 20.sp,
+                                        fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
+                                        fontWeight = FontWeight(1000),
+                                        letterSpacing = 0.96.sp,
+                                        textAlign = TextAlign.Center,
+
+
+                                        ))},
+                                    selected = selectedTab == 0,
+
+                                    onClick = { setSelectedTab(0) },
+
+                                    unselectedContentColor = Color.White
+
+                                )
+                                Tab(
+                                    text = { androidx.compose.material.Text("Плейлисты",style = (androidx.compose.material3.MaterialTheme.typography.bodyLarge).copy(fontSize = 16.sp,
+                                        lineHeight = 20.sp,
+                                        fontFamily = FontFamily(Font(R.font.codenext_extrabold)),
+                                        fontWeight = FontWeight(1000),
+                                        letterSpacing = 0.96.sp,
+                                        textAlign = TextAlign.Center,
+
+                                        ))},
+                                    selected = selectedTab == 1,
+                                    unselectedContentColor = Color.White,
+                                    onClick = { setSelectedTab(1) }
+
+                                )
+                            }
+                        }
+                    )
+                }
+            ) { innerPadding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xCF000000))
+                        .padding(innerPadding)
+                ){
+                    when (selectedTab) {
+                        0 -> UserRatingChart(userChatViewModel = usersViewModel)
+                        1 -> PlaylistChart(playlistViewModel.playlists.value.sortedByDescending { it.rating }, navController = navController, viewModel = playlistViewModel)
+                    }
+                }
+            }
+
+    }
+
+}
+
+@Composable
+fun UserRatingChart(userChatViewModel: UserChatViewModel) {
+    val users by userChatViewModel.users.observeAsState(initial = emptyList())
+    LazyColumn(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+        itemsIndexed(users.sortedByDescending { it.ratingAuthor }) { index, user ->
+            UserCardChart(user, index + 1)
+        }
+    }
+}
+
+@Composable
+fun UserCardChart(user: User,rank: Int) {
+    Box(
+        modifier = Modifier
+            .background(color = Color.Black)
+    ) {
+        Box(
+            modifier = Modifier
+                .background(Color.Transparent)
+                .padding(bottom = 7.dp)
+        ) {
+            Image(
+                painter = rememberAsyncImagePainter(user.photoUrl),
+                contentDescription = "",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent)
+                    .height(90.dp)
+                    .align(Alignment.Center),
+                contentScale = ContentScale.Crop
+            )
+
+            Card(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .align(Alignment.Center)
+                    .background(color = Color.Transparent),
+                elevation = 120.dp,
+                backgroundColor = Color.Transparent
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .background(Color.Transparent)
+                        .fillMaxSize()
+                ) {
+
+
+                    Row(modifier = Modifier.background(Color.Transparent)) {
+                        Text(
+                            text = "$rank",
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                lineHeight = 21.sp,
+                                fontFamily = FontFamily(Font(R.font.codenext_book)),
+                                fontWeight = FontWeight(700),
+                                letterSpacing = 1.02.sp,
+                                color = Color(0xFFFFFFFF)
+                            ),
+                            modifier = Modifier
+                                .background(Color.Transparent)
+                                .padding(end = 8.dp)  // Добавляем отступ справа
                         )
-                        Tab(
-                            text = { Text("Чарт плейлистов") },
-                            selected = selectedTab == 1,
-                            onClick = { setSelectedTab(1) }
+                        Text(
+                            text = user.name!!,
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                lineHeight = 21.sp,
+                                fontFamily = FontFamily(Font(R.font.codenext_book)),
+                                fontWeight = FontWeight(700),
+                                letterSpacing = 1.02.sp,
+                                color = Color(0xFFFFFFFF)
+                            ), modifier = Modifier.background(Color.Transparent)
+                        )
+                        Text(
+                            text = "${user.ratingAuthor}",
+                            style = TextStyle(
+                                fontSize = 17.sp,
+                                lineHeight = 17.sp,
+                                fontFamily = FontFamily(Font(R.font.codenext_book)),
+                                fontWeight = FontWeight(700),
+                                letterSpacing = 0.7000000000000001.sp,
+                                color = Color(0xFFFFFFFF)
+                            ), modifier = Modifier.background(Color.Transparent)
                         )
                     }
                 }
-            )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xCF000000))
-                .padding(innerPadding)
-        ) {
-            when (selectedTab) {
-                0 -> UserRatingChart(userChatViewModel = usersViewModel)
-                1 -> PlaylistChart(playlistViewModel.playlists.value.sortedByDescending { it.rating }, navController = navController, viewModel = playlistViewModel)
             }
         }
     }
 }
 
 @Composable
-fun UserRatingChart(userChatViewModel: UserChatViewModel) {
-    val users by userChatViewModel.users.observeAsState(initial = emptyList())
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(users.sortedByDescending { it.ratingAuthor }) { user ->
-            UserCardChart(user)
-        }
-    }
-}
-
-@Composable
-fun UserCardChart(user: User) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.1f)
-            .background(Color.Black)
-            .padding(start = 25.dp, end = 25.dp)
-    ) {
-        Image(
-            painter = rememberAsyncImagePainter(model = user.photoUrl) ?: painterResource(id = R.drawable.sdf),
-            contentDescription = "",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(16.dp))
-        )
-        Row(
-            Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = user.name,
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    lineHeight = 25.sp,
-                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                    fontWeight = FontWeight(700),
-                    letterSpacing = 1.2.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color(0xFFFFFFFF)
-                ),
-                modifier = Modifier.padding(end = 25.dp, start = 9.dp)
-            )
-            Text(
-                text = user.ratingAuthor.toString(),
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    lineHeight = 25.sp,
-                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                    fontWeight = FontWeight(700),
-                    letterSpacing = 1.2.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color(0xFFFFFFFF)
-                ),
-                modifier = Modifier.padding(end = 25.dp, start = 9.dp)
-            )
-        }
-    }
-}
-
-@Composable
 fun PlaylistChart(playlists: List<Playlist>, navController: NavController, viewModel: PlaylistChartViewModel) {
-    LazyColumn(Modifier.padding(bottom = 85.dp)) {
+    LazyColumn(
+        Modifier
+            .padding(bottom = 85.dp)
+            .background(Color.Black)) {
         items(playlists, key = { it.id }) { playlist ->
             PlaylistCard(playlist, playlists.indexOf(playlist), navController = navController, viewModel = viewModel)
         }
@@ -187,149 +301,327 @@ fun PlaylistChart(playlists: List<Playlist>, navController: NavController, viewM
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun PlaylistCard(playlist: Playlist, raitcount: Int, navController: NavController, viewModel: PlaylistChartViewModel) {
+fun PlaylistCard(
+    playlist: Playlist,
+    raitcount: Int,
+    navController: NavController,
+    viewModel: PlaylistChartViewModel
+) {
     val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val coroutineScope = rememberCoroutineScope()
     val offsetX = remember { Animatable(0f) }
     val threshold = 100
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(79.dp)
-            .background(color = Color(0xCF1E1E1E))
-            .pointerInput(Unit) {
-                detectHorizontalDragGestures(
-                    onHorizontalDrag = { change, dragAmount ->
-                        change.consume()
-                        coroutineScope.launch {
-                            offsetX.snapTo(offsetX.value + dragAmount)
-                        }
-                    },
-                    onDragEnd = {
-                        coroutineScope.launch {
-                            if (offsetX.value > threshold) {
-                                viewModel.updatePlaylistRating(playlist.id, 50)
-                            } else if (offsetX.value < -threshold) {
-                                viewModel.updatePlaylistRating(playlist.id, -50)
-                            }
-                            offsetX.animateTo(targetValue = 0f)
-                        }
-                    },
-                    onDragCancel = {
-                        coroutineScope.launch {
-                            offsetX.animateTo(targetValue = 0f)
-                        }
-                    }
-                )
-            }
-    ) {
-        Card(
+    if (raitcount < 3) {
+        Box(
             modifier = Modifier
-                .padding(start = 20.dp, end = 20.dp)
-                .width(370.dp)
-                .height(79.dp)
-                .combinedClickable(
-                    onClick = {
-                        val playlistId = playlist.id
-                        viewModel.updatePlaylistRating(playlistId, 15)
-                        navController.navigate("OpenPbPlayList/${playlistId}")
-                    },
-                    onLongClick = { scope.launch { sheetState.show() } },
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = rememberRipple()
-                )
-                .background(color = Color(0xCF1E1E1E))
-                .offset { IntOffset(offsetX.value.roundToInt(), 0) },
-            elevation = 10.dp,
-            backgroundColor = Color(0xCF1E1E1E)
+
+
+                .background(color = Color.Transparent)
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            coroutineScope.launch {
+                                offsetX.snapTo(offsetX.value + dragAmount)
+                            }
+                        },
+                        onDragEnd = {
+                            coroutineScope.launch {
+                                if (offsetX.value > threshold) {
+                                    viewModel.updatePlaylistRating(playlist.id, 50)
+                                } else if (offsetX.value < -threshold) {
+                                    viewModel.updatePlaylistRating(playlist.id, -50)
+                                }
+                                offsetX.animateTo(targetValue = 0f)
+                            }
+                        },
+                        onDragCancel = {
+                            coroutineScope.launch {
+                                offsetX.animateTo(targetValue = 0f)
+                            }
+                        }
+                    )
+                }
         ) {
-            Row(horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "#${raitcount + 1}",
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        lineHeight = 25.sp,
-                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                        fontWeight = FontWeight(700),
-                        letterSpacing = 1.2.sp,
-                        textAlign = TextAlign.Center,
-                        color = Color(0xFFFFFFFF)
-                    ),
-                    modifier = Modifier.padding(end = 25.dp, start = 9.dp)
-                )
+            Box(modifier = Modifier
+                .background(Color.Transparent)
+                .padding(bottom = 7.dp)) {
                 Image(
                     painter = rememberAsyncImagePainter(playlist.photoUrl),
                     contentDescription = "",
                     modifier = Modifier
-                        .padding(end = 37.dp)
-                        .height(52.dp)
-                        .width(53.dp)
+                        .fillMaxWidth()
+                        .background(Color.Transparent)
+                        .height(90.dp)
+                        .align(Alignment.Center),
+                    contentScale = ContentScale.Crop
                 )
 
-                Column {
-                    Text(
-                        text = playlist.name!!,
+                Card(
+                    modifier = Modifier
+                        .fillMaxSize()
+
+                        .align(Alignment.Center)
+                        .combinedClickable(
+                            onClick = {
+                                val playlistId = playlist.id
+                                viewModel.updatePlaylistRating(playlistId, 15)
+                                navController.navigate("OpenPbPlayList/${playlistId}")
+                            },
+                            onLongClick = { scope.launch { sheetState.show() } },
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = rememberRipple()
+                        )
+                        .background(color = Color.Transparent)
+                        .offset { IntOffset(offsetX.value.roundToInt(), 0) },
+                    elevation = 120.dp,
+                    backgroundColor = Color.Transparent
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .background(Color.Transparent)
+                            .fillMaxSize()
+                    ) {
+                        Text(
+                            text = "№${raitcount + 1}",
+                            style = TextStyle(
+                                fontSize = 20.sp,
+                                lineHeight = 25.sp,
+                                fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                                fontWeight = FontWeight(700),
+                                letterSpacing = 1.2.sp,
+                                textAlign = TextAlign.Center,
+                                color = Color(0xFFFFFFFF)
+                            ),
+                            modifier = Modifier
+                                .padding(end = 20.dp, start = 9.dp)
+                                .background(Color.Transparent)
+                        )
+
+                        Image(
+                            painter = rememberAsyncImagePainter(playlist.photoUrl),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .padding(end = 37.dp)
+                                .width(80.dp)
+                                .clip(RoundedCornerShape(13.dp))
+                                .height(80.dp), contentScale = ContentScale.Crop
+                        )
+                        Column(modifier = Modifier.background(Color.Transparent)) {
+                            Text(
+                                text = playlist.name!!,
+                                style = TextStyle(
+                                    fontSize = 24.sp,
+                                    lineHeight = 21.sp,
+                                    fontFamily = FontFamily(Font(R.font.codenext_book)),
+                                    fontWeight = FontWeight(700),
+                                    letterSpacing = 1.02.sp,
+                                    color = Color(0xFFFFFFFF)
+                                ), modifier = Modifier.background(Color.Transparent)
+                            )
+                            Text(
+                                text = "Очков: ${playlist.rating}",
+                                style = TextStyle(
+                                    fontSize = 17.sp,
+                                    lineHeight = 17.sp,
+                                    fontFamily = FontFamily(Font(R.font.codenext_book)),
+                                    fontWeight = FontWeight(700),
+                                    letterSpacing = 0.7000000000000001.sp,
+                                    color = Color(0xFFFFFFFF)
+                                ), modifier = Modifier.background(Color.Transparent)
+                            )
+                        }
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = offsetX.value > 0,
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .background(Color.Transparent)
+                ) {
+                    androidx.compose.material3.Text(
+                        text = "+50",
                         style = TextStyle(
-                            fontSize = 17.sp,
-                            lineHeight = 21.sp,
+                            fontSize = 16.sp,
+                            lineHeight = 20.sp,
                             fontFamily = FontFamily(Font(R.font.raleway_extralight)),
                             fontWeight = FontWeight(700),
-                            letterSpacing = 1.02.sp,
-                            color = Color(0xFFFFFFFF)
+                            letterSpacing = 0.96.sp,
+                            color = Color(0xFF4CAF50)
                         )
                     )
-                    Text(
-                        text = "Очков: ${playlist.rating}",
+                }
+                AnimatedVisibility(
+                    visible = offsetX.value < 0,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .background(Color.Transparent)
+                ) {
+                    androidx.compose.material3.Text(
+                        text = "-50",
                         style = TextStyle(
-                            fontSize = 14.sp,
-                            lineHeight = 17.sp,
+                            fontSize = 16.sp,
+                            lineHeight = 20.sp,
                             fontFamily = FontFamily(Font(R.font.raleway_extralight)),
                             fontWeight = FontWeight(700),
-                            letterSpacing = 0.7000000000000001.sp,
-                            color = Color(0xFF8A9A9D)
+                            letterSpacing = 0.96.sp,
+                            color = Color(0xFFF70404)
                         )
                     )
                 }
             }
+            if (sheetState.isVisible) {
+                ModalBottomSheet(
+                    onDismissRequest = { scope.launch { sheetState.hide() } }
+                ) {
+                    // Содержимое модального щита
+                }
+            }
         }
 
-        AnimatedVisibility(visible = offsetX.value > 0, modifier = Modifier.align(Alignment.CenterStart)) {
-            androidx.compose.material3.Text(
-                text = "+50",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    lineHeight = 20.sp,
-                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                    fontWeight = FontWeight(700),
-                    letterSpacing = 0.96.sp,
-                    color = Color(0xFFFFFFFF)
-                )
-            )
-        }
-        AnimatedVisibility(visible = offsetX.value < 0, modifier = Modifier.align(Alignment.CenterEnd)) {
-            androidx.compose.material3.Text(
-                text = "-50",
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    lineHeight = 20.sp,
-                    fontFamily = FontFamily(Font(R.font.raleway_extralight)),
-                    fontWeight = FontWeight(700),
-                    letterSpacing = 0.96.sp,
-                    color = Color(0xFFFFFFFF)
-                )
-            )
-        }
-    }
-    if (sheetState.isVisible) {
-        ModalBottomSheet(
-            onDismissRequest = { scope.launch { sheetState.hide() } }
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.2f)
+                .background(color = Color(0xCF000000))
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            coroutineScope.launch {
+                                offsetX.snapTo(offsetX.value + dragAmount)
+                            }
+                        },
+                        onDragEnd = {
+                            coroutineScope.launch {
+                                if (offsetX.value > threshold) {
+                                    viewModel.updatePlaylistRating(playlist.id, 50)
+                                } else if (offsetX.value < -threshold) {
+                                    viewModel.updatePlaylistRating(playlist.id, -50)
+                                }
+                                offsetX.animateTo(targetValue = 0f)
+                            }
+                        },
+                        onDragCancel = {
+                            coroutineScope.launch {
+                                offsetX.animateTo(targetValue = 0f)
+                            }
+                        }
+                    )
+                }
         ) {
-            // Содержимое модального щита
+            Card(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 15.dp)
+                    .combinedClickable(
+                        onClick = {
+                            val playlistId = playlist.id
+                            viewModel.updatePlaylistRating(playlistId, 15)
+                            navController.navigate("OpenPbPlayList/${playlistId}")
+                        },
+                        onLongClick = { scope.launch { sheetState.show() } },
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = rememberRipple()
+                    )
+                    .background(color = Color(0xCF000000))
+                    .offset { IntOffset(offsetX.value.roundToInt(), 0) },
+                elevation = 10.dp,
+                backgroundColor = Color(0xCF000000)
+            ) {
+                Row(horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "№${raitcount + 1}",
+                        style = TextStyle(
+                            fontSize = 20.sp,
+                            lineHeight = 25.sp,
+                            fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                            fontWeight = FontWeight(700),
+                            letterSpacing = 1.2.sp,
+                            textAlign = TextAlign.Center,
+                            color = Color(0xFFFFFFFF)
+                        ),
+                        modifier = Modifier.padding(end = 20.dp, start = 9.dp)
+                    )
+                    Image(
+                        painter = rememberAsyncImagePainter(playlist.photoUrl),
+                        contentDescription = "",
+                        modifier = Modifier
+                            .padding(end = 37.dp)
+                            .width(80.dp)
+                            .clip(RoundedCornerShape(13.dp))
+                            .height(80.dp), contentScale = ContentScale.Crop
+                    )
+
+                    Column {
+                        Text(
+                            text = playlist.name!!,
+                            style = TextStyle(
+                                fontSize = 17.sp,
+                                lineHeight = 21.sp,
+                                fontFamily = FontFamily(Font(R.font.codenext_book)),
+                                fontWeight = FontWeight(700),
+                                letterSpacing = 1.02.sp,
+                                color = Color(0xFFFFFFFF)
+                            )
+                        )
+                        Text(
+                            text = "Очков: ${playlist.rating}",
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                lineHeight = 17.sp,
+                                fontFamily = FontFamily(Font(R.font.codenext_book)),
+                                fontWeight = FontWeight(700),
+                                letterSpacing = 0.7000000000000001.sp,
+                                color = Color(0xFF8A9A9D)
+                            )
+                        )
+                    }
+                }
+            }
+
+            AnimatedVisibility(visible = offsetX.value > 0, modifier = Modifier.align(Alignment.CenterStart)) {
+                androidx.compose.material3.Text(
+                    text = "+50",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                        fontWeight = FontWeight(700),
+                        letterSpacing = 0.96.sp,
+                        color = Color(0xFF4CAF50)
+                    )
+                )
+            }
+            AnimatedVisibility(visible = offsetX.value < 0, modifier = Modifier.align(Alignment.CenterEnd)) {
+                androidx.compose.material3.Text(
+                    text = "-50",
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        fontFamily = FontFamily(Font(R.font.raleway_extralight)),
+                        fontWeight = FontWeight(700),
+                        letterSpacing = 0.96.sp,
+                        color = Color(0xFFF70404)
+                    )
+                )
+            }
+        }
+        if (sheetState.isVisible) {
+            ModalBottomSheet(
+                onDismissRequest = { scope.launch { sheetState.hide() } }
+            ) {
+                // Содержимое модального щита
+            }
         }
     }
 }
+
 
 
 

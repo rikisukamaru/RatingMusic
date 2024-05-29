@@ -412,7 +412,7 @@ fun MyMusicScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { androidx.compose.material.Text("Мой чарт") },
+                    title = { androidx.compose.material.Text("Моя библиотека") },
                     backgroundColor = Color.Black,
                     contentColor = Color.White,
                     actions = {
