@@ -191,7 +191,7 @@ fun MyProfileCard(
             Modifier.padding(top = 20.dp)
                 .clickable {
                     val playlistId = playlist.id
-                    viewModel.updatePlaylistRating(playlistId, 15)
+                    viewModel.updatePlaylistRating(playlistId, 15,click = false)
                     navController.navigate("OpenPbPlayList/${playlistId}")
                 }
         ) {

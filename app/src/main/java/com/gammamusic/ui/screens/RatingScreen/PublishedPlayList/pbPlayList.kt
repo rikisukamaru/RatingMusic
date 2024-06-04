@@ -50,6 +50,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -170,6 +171,7 @@ fun pbPlayList(navController: NavController, viewModel: pbPlayListViewModel, pla
 @Composable
 fun TrackItem(track: Track, viewModel: pbPlayListViewModel, playlistId: String) {
     val currentUser = FirebaseAuth.getInstance().currentUser
+    val context = LocalContext.current
     if (currentUser != null) {
         val userId = currentUser.uid
         LaunchedEffect(userId) {
@@ -201,10 +203,10 @@ fun TrackItem(track: Track, viewModel: pbPlayListViewModel, playlistId: String) 
                         onDragEnd = {
                             coroutineScope.launch {
                                 if (offsetX.value > threshold) {
-                                    viewModel.updateTrackRating(playlistId, track.songId.toString() ,25)
+                                    viewModel.updateTrackRating(context,playlistId, track.songId.toString() ,25)
                                     viewModel.increaseSwipeCount(playlistId, userId)
                                 } else if (offsetX.value < -threshold) {
-                                    viewModel.updateTrackRating(playlistId, track.songId.toString() ,-25)
+                                    viewModel.updateTrackRating(context,playlistId, track.songId.toString() ,-25)
                                     viewModel.increaseSwipeCount(playlistId, userId)
                                 }
                                 offsetX.animateTo(targetValue = 0f)

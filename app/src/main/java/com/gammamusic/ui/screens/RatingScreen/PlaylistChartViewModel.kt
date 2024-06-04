@@ -37,63 +37,102 @@ class PlaylistChartViewModel : ViewModel() {
             }
         })
     }
-    fun updatePlaylistRating(playlistId: String, ratingChange: Int) {
+    fun updatePlaylistRating(playlistId: String, ratingChange: Int, click: Boolean) {
+
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val database = FirebaseDatabase.getInstance()
         val userSwipesRef = database.getReference("userSwipes/$userId/playlistSwipes/$playlistId")
+        if (click==true) {
+            val playlistsRef = database.getReference("charts/published")
+            val query = playlistsRef.orderByChild("id").equalTo(playlistId)
 
-        userSwipesRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val swipeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+            query.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        val playlistRef = dataSnapshot.children.first().ref
 
-                if (swipeCount < 1) {
-                    // Пользователь еще не свайпал этот плейлист
-                    userSwipesRef.setValue(swipeCount + 1)
+                        playlistRef.runTransaction(object : Transaction.Handler {
+                            override fun doTransaction(mutableData: MutableData): Transaction.Result {
+                                val playlist = mutableData.getValue(Playlist::class.java)
+                                if (playlist == null) {
+                                    return Transaction.success(mutableData)
+                                }
 
-                    // Обновляем рейтинг плейлиста
-                    val playlistsRef = database.getReference("charts/published")
-                    val query = playlistsRef.orderByChild("id").equalTo(playlistId)
+                                // Обновляем рейтинг
+                                val newRating = playlist.rating + ratingChange
+                                playlist.rating = newRating
 
-                    query.addListenerForSingleValueEvent(object : ValueEventListener {
-                        override fun onDataChange(dataSnapshot: DataSnapshot) {
-                            if (dataSnapshot.exists()) {
-                                val playlistRef = dataSnapshot.children.first().ref
+                                mutableData.value = playlist
+                                return Transaction.success(mutableData)
+                            }
 
-                                playlistRef.runTransaction(object : Transaction.Handler {
-                                    override fun doTransaction(mutableData: MutableData): Transaction.Result {
-                                        val playlist = mutableData.getValue(Playlist::class.java)
-                                        if (playlist == null) {
+                            override fun onComplete(databaseError: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                                // Обработка ошибок или действий после обновления
+                            }
+                        })
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Обработка ошибок
+                }
+            })
+
+        }else{
+            userSwipesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val swipeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+
+                    if (swipeCount < 1) {
+                        // Пользователь еще не свайпал этот плейлист
+                        userSwipesRef.setValue(swipeCount + 1)
+
+                        // Обновляем рейтинг плейлиста
+                        val playlistsRef = database.getReference("charts/published")
+                        val query = playlistsRef.orderByChild("id").equalTo(playlistId)
+
+                        query.addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                if (dataSnapshot.exists()) {
+                                    val playlistRef = dataSnapshot.children.first().ref
+
+                                    playlistRef.runTransaction(object : Transaction.Handler {
+                                        override fun doTransaction(mutableData: MutableData): Transaction.Result {
+                                            val playlist = mutableData.getValue(Playlist::class.java)
+                                            if (playlist == null) {
+                                                return Transaction.success(mutableData)
+                                            }
+
+                                            // Обновляем рейтинг
+                                            val newRating = playlist.rating + ratingChange
+                                            playlist.rating = newRating
+
+                                            mutableData.value = playlist
                                             return Transaction.success(mutableData)
                                         }
 
-                                        // Обновляем рейтинг
-                                        val newRating = playlist.rating + ratingChange
-                                        playlist.rating = newRating
-
-                                        mutableData.value = playlist
-                                        return Transaction.success(mutableData)
-                                    }
-
-                                    override fun onComplete(databaseError: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
-                                        // Обработка ошибок или действий после обновления
-                                    }
-                                })
+                                        override fun onComplete(databaseError: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                                            // Обработка ошибок или действий после обновления
+                                        }
+                                    })
+                                }
                             }
-                        }
 
-                        override fun onCancelled(databaseError: DatabaseError) {
-                            // Обработка ошибок
-                        }
-                    })
-                } else {
-                    // Пользователь уже свайпал этот плейлист, можно вывести сообщение или как-то иначе уведомить
+                            override fun onCancelled(databaseError: DatabaseError) {
+                                // Обработка ошибок
+                            }
+                        })
+                    } else {
+                        // Пользователь уже свайпал этот плейлист, можно вывести сообщение или как-то иначе уведомить
+                    }
                 }
-            }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Обработка ошибок
-            }
-        })
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Обработка ошибок
+                }
+            })
+        }
+
     }
 
 

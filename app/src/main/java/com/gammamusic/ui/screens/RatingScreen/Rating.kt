@@ -329,9 +329,9 @@ fun PlaylistCard(
                         onDragEnd = {
                             coroutineScope.launch {
                                 if (offsetX.value > threshold) {
-                                    viewModel.updatePlaylistRating(playlist.id, 50)
+                                    viewModel.updatePlaylistRating(playlist.id, 50,click = false)
                                 } else if (offsetX.value < -threshold) {
-                                    viewModel.updatePlaylistRating(playlist.id, -50)
+                                    viewModel.updatePlaylistRating(playlist.id, -50,click = false)
                                 }
                                 offsetX.animateTo(targetValue = 0f)
                             }
@@ -366,7 +366,8 @@ fun PlaylistCard(
                         .combinedClickable(
                             onClick = {
                                 val playlistId = playlist.id
-                                viewModel.updatePlaylistRating(playlistId, 15)
+                                val click: Boolean = true
+                                viewModel.updatePlaylistRating(playlistId, 15, click)
                                 navController.navigate("OpenPbPlayList/${playlistId}")
                             },
                             onLongClick = { scope.launch { sheetState.show() } },
@@ -500,9 +501,9 @@ fun PlaylistCard(
                         onDragEnd = {
                             coroutineScope.launch {
                                 if (offsetX.value > threshold) {
-                                    viewModel.updatePlaylistRating(playlist.id, 50)
+                                    viewModel.updatePlaylistRating(playlist.id, 50,false)
                                 } else if (offsetX.value < -threshold) {
-                                    viewModel.updatePlaylistRating(playlist.id, -50)
+                                    viewModel.updatePlaylistRating(playlist.id, -50,click = false)
                                 }
                                 offsetX.animateTo(targetValue = 0f)
                             }
@@ -522,7 +523,7 @@ fun PlaylistCard(
                     .combinedClickable(
                         onClick = {
                             val playlistId = playlist.id
-                            viewModel.updatePlaylistRating(playlistId, 15)
+                            viewModel.updatePlaylistRating(playlistId, 15,click = true)
                             navController.navigate("OpenPbPlayList/${playlistId}")
                         },
                         onLongClick = { scope.launch { sheetState.show() } },

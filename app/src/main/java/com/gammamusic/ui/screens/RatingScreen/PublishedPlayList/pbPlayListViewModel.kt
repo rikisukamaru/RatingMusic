@@ -1,6 +1,8 @@
 package com.gammamusic.ui.screens.RatingScreen.PublishedPlayList
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -55,17 +57,17 @@ class pbPlayListViewModel: ViewModel() {
         })
     }
 
-    fun updateTrackRating(playlistId: String, trackId: String, ratingChange: Int) {
+    fun updateTrackRating(context: Context, playlistId: String, trackId: String, ratingChange: Int) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val database = FirebaseDatabase.getInstance()
-        val userPlaylistSwipesRef = database.getReference("userSwipes/$userId/playlistSwipes/$playlistId")
-        val userTrackSwipesRef = database.getReference("userSwipes/$userId/playlistSwipes/$playlistId/trackSwipes/$trackId")
+        val userTrackSwipesRef = database.getReference("userSwipes/$userId/trackSwipes/$playlistId/$trackId")
+        val userTrackSwipeCountsRef = database.getReference("userSwipes/$userId/trackSwipes/$playlistId")
 
-        userPlaylistSwipesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        userTrackSwipeCountsRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val playlistSwipeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+                val uniqueTrackSwipeCount = dataSnapshot.childrenCount
 
-                if (playlistSwipeCount < 2) {
+                if (uniqueTrackSwipeCount < 2 || dataSnapshot.hasChild(trackId)) {
                     userTrackSwipesRef.addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onDataChange(dataSnapshot: DataSnapshot) {
                             val trackSwipeCount = dataSnapshot.getValue(Int::class.java) ?: 0
@@ -73,7 +75,6 @@ class pbPlayListViewModel: ViewModel() {
                             if (trackSwipeCount < 1) {
                                 // Пользователь еще не свайпал этот трек
                                 userTrackSwipesRef.setValue(trackSwipeCount + 1)
-                                userPlaylistSwipesRef.setValue(playlistSwipeCount + 1)
 
                                 // Обновляем рейтинг трека аналогично обновлению рейтинга плейлиста
                                 val playlistsRef = database.getReference("charts/published")
@@ -101,7 +102,12 @@ class pbPlayListViewModel: ViewModel() {
                                                 }
 
                                                 override fun onComplete(databaseError: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
-                                                    // Обработка ошибок или действий после обновления
+                                                    // Отображение Toast сообщения после обновления рейтинга
+                                                    if (committed) {
+                                                        Toast.makeText(context, "Рейтинг трека обновлен", Toast.LENGTH_SHORT).show()
+                                                    } else {
+                                                        Toast.makeText(context, "Ошибка обновления рейтинга", Toast.LENGTH_SHORT).show()
+                                                    }
                                                 }
                                             })
                                         }
@@ -109,24 +115,29 @@ class pbPlayListViewModel: ViewModel() {
 
                                     override fun onCancelled(databaseError: DatabaseError) {
                                         // Обработка ошибок
+                                        Toast.makeText(context, "Ошибка загрузки данных плейлиста", Toast.LENGTH_SHORT).show()
                                     }
                                 })
                             } else {
-                                // Пользователь уже свайпал этот трек, можно вывести сообщение или как-то иначе уведомить
+                                // Пользователь уже свайпал этот трек, выводим сообщение
+                                Toast.makeText(context, "Вы уже свайпали этот трек", Toast.LENGTH_SHORT).show()
                             }
                         }
 
                         override fun onCancelled(databaseError: DatabaseError) {
                             // Обработка ошибок
+                            Toast.makeText(context, "Ошибка загрузки данных трека", Toast.LENGTH_SHORT).show()
                         }
                     })
                 } else {
-                    // Пользователь уже свайпал два трека в этом плейлисте, можно вывести сообщение или как-то иначе уведомить
+                    // Пользователь уже свайпал два уникальных трека в этом плейлисте, выводим сообщение
+                    Toast.makeText(context, "Вы уже свайпали два уникальных трека в этом плейлисте", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
                 // Обработка ошибок
+                Toast.makeText(context, "Ошибка загрузки данных", Toast.LENGTH_SHORT).show()
             }
         })
     }
