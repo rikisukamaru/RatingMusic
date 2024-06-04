@@ -201,10 +201,10 @@ fun TrackItem(track: Track, viewModel: pbPlayListViewModel, playlistId: String) 
                         onDragEnd = {
                             coroutineScope.launch {
                                 if (offsetX.value > threshold) {
-                                    viewModel.updatePlaylistRating(playlistId, 25)
+                                    viewModel.updateTrackRating(playlistId, track.songId.toString() ,25)
                                     viewModel.increaseSwipeCount(playlistId, userId)
                                 } else if (offsetX.value < -threshold) {
-                                    viewModel.updatePlaylistRating(playlistId, -25)
+                                    viewModel.updateTrackRating(playlistId, track.songId.toString() ,-25)
                                     viewModel.increaseSwipeCount(playlistId, userId)
                                 }
                                 offsetX.animateTo(targetValue = 0f)

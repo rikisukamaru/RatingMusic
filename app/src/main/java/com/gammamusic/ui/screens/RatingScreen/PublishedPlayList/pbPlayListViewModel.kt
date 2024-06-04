@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.gammamusic.domain.model.Player.Track
 import com.gammamusic.domain.model.Playlist
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -54,40 +55,73 @@ class pbPlayListViewModel: ViewModel() {
         })
     }
 
-    fun updatePlaylistRating(playlistId: String, ratingChange: Int) {
+    fun updateTrackRating(playlistId: String, trackId: String, ratingChange: Int) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val database = FirebaseDatabase.getInstance()
-        val playlistsRef = database.getReference("charts/published")
+        val userPlaylistSwipesRef = database.getReference("userSwipes/$userId/playlistSwipes/$playlistId")
+        val userTrackSwipesRef = database.getReference("userSwipes/$userId/playlistSwipes/$playlistId/trackSwipes/$trackId")
 
-        // Создать запрос для поиска плейлиста по id
-        val query = playlistsRef.orderByChild("id").equalTo(playlistId)
-
-        query.addListenerForSingleValueEvent(object : ValueEventListener {
+        userPlaylistSwipesRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    // Получаем ссылку на первый найденный плейлист
-                    val playlistRef = dataSnapshot.children.first().ref
+                val playlistSwipeCount = dataSnapshot.getValue(Int::class.java) ?: 0
 
-                    playlistRef.runTransaction(object : Transaction.Handler {
-                        override fun doTransaction(mutableData: MutableData): Transaction.Result {
-                            val playlist = mutableData.getValue(Playlist::class.java)
-                            if (playlist == null) {
-                                return Transaction.success(mutableData)
+                if (playlistSwipeCount < 2) {
+                    userTrackSwipesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            val trackSwipeCount = dataSnapshot.getValue(Int::class.java) ?: 0
+
+                            if (trackSwipeCount < 1) {
+                                // Пользователь еще не свайпал этот трек
+                                userTrackSwipesRef.setValue(trackSwipeCount + 1)
+                                userPlaylistSwipesRef.setValue(playlistSwipeCount + 1)
+
+                                // Обновляем рейтинг трека аналогично обновлению рейтинга плейлиста
+                                val playlistsRef = database.getReference("charts/published")
+                                val query = playlistsRef.orderByChild("id").equalTo(playlistId)
+
+                                query.addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            val playlistRef = dataSnapshot.children.first().ref
+                                            val trackRef = playlistRef.child("tracklist").child(trackId)
+
+                                            trackRef.runTransaction(object : Transaction.Handler {
+                                                override fun doTransaction(mutableData: MutableData): Transaction.Result {
+                                                    val track = mutableData.getValue(Playlist::class.java)
+                                                    if (track == null) {
+                                                        return Transaction.success(mutableData)
+                                                    }
+
+                                                    // Обновляем рейтинг
+                                                    val newRating = track.rating + ratingChange
+                                                    track.rating = newRating
+
+                                                    mutableData.value = track
+                                                    return Transaction.success(mutableData)
+                                                }
+
+                                                override fun onComplete(databaseError: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                                                    // Обработка ошибок или действий после обновления
+                                                }
+                                            })
+                                        }
+                                    }
+
+                                    override fun onCancelled(databaseError: DatabaseError) {
+                                        // Обработка ошибок
+                                    }
+                                })
+                            } else {
+                                // Пользователь уже свайпал этот трек, можно вывести сообщение или как-то иначе уведомить
                             }
-
-                            // Обновляем рейтинг
-                            val newRating = playlist.rating + ratingChange
-                            Log.e("newRating", newRating.toString())
-                            playlist.rating = newRating
-
-                            // Обновляем данные в Firebase
-                            mutableData.value = playlist
-                            return Transaction.success(mutableData)
                         }
 
-                        override fun onComplete(databaseError: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
-                            // Обработка ошибок или действий после обновления
+                        override fun onCancelled(databaseError: DatabaseError) {
+                            // Обработка ошибок
                         }
                     })
+                } else {
+                    // Пользователь уже свайпал два трека в этом плейлисте, можно вывести сообщение или как-то иначе уведомить
                 }
             }
 

@@ -3,6 +3,7 @@ package com.gammamusic.ui.screens.RatingScreen
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.gammamusic.domain.model.Playlist
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -37,38 +38,55 @@ class PlaylistChartViewModel : ViewModel() {
         })
     }
     fun updatePlaylistRating(playlistId: String, ratingChange: Int) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val database = FirebaseDatabase.getInstance()
-        val playlistsRef = database.getReference("charts/published")
+        val userSwipesRef = database.getReference("userSwipes/$userId/playlistSwipes/$playlistId")
 
-        // Создать запрос для поиска плейлиста по id
-        val query = playlistsRef.orderByChild("id").equalTo(playlistId)
-
-        query.addListenerForSingleValueEvent(object : ValueEventListener {
+        userSwipesRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    // Получаем ссылку на первый найденный плейлист
-                    val playlistRef = dataSnapshot.children.first().ref
+                val swipeCount = dataSnapshot.getValue(Int::class.java) ?: 0
 
-                    playlistRef.runTransaction(object : Transaction.Handler {
-                        override fun doTransaction(mutableData: MutableData): Transaction.Result {
-                            val playlist = mutableData.getValue(Playlist::class.java)
-                            if (playlist == null) {
-                                return Transaction.success(mutableData)
+                if (swipeCount < 1) {
+                    // Пользователь еще не свайпал этот плейлист
+                    userSwipesRef.setValue(swipeCount + 1)
+
+                    // Обновляем рейтинг плейлиста
+                    val playlistsRef = database.getReference("charts/published")
+                    val query = playlistsRef.orderByChild("id").equalTo(playlistId)
+
+                    query.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                val playlistRef = dataSnapshot.children.first().ref
+
+                                playlistRef.runTransaction(object : Transaction.Handler {
+                                    override fun doTransaction(mutableData: MutableData): Transaction.Result {
+                                        val playlist = mutableData.getValue(Playlist::class.java)
+                                        if (playlist == null) {
+                                            return Transaction.success(mutableData)
+                                        }
+
+                                        // Обновляем рейтинг
+                                        val newRating = playlist.rating + ratingChange
+                                        playlist.rating = newRating
+
+                                        mutableData.value = playlist
+                                        return Transaction.success(mutableData)
+                                    }
+
+                                    override fun onComplete(databaseError: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                                        // Обработка ошибок или действий после обновления
+                                    }
+                                })
                             }
-
-                            // Обновляем рейтинг
-                            val newRating = playlist.rating + ratingChange
-                            playlist.rating = newRating
-
-                            // Обновляем данные в Firebase
-                            mutableData.value = playlist
-                            return Transaction.success(mutableData)
                         }
 
-                        override fun onComplete(databaseError: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
-                            // Обработка ошибок или действий после обновления
+                        override fun onCancelled(databaseError: DatabaseError) {
+                            // Обработка ошибок
                         }
                     })
+                } else {
+                    // Пользователь уже свайпал этот плейлист, можно вывести сообщение или как-то иначе уведомить
                 }
             }
 
@@ -77,5 +95,6 @@ class PlaylistChartViewModel : ViewModel() {
             }
         })
     }
+
 
 }
