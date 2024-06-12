@@ -1,6 +1,7 @@
 package com.example.freelis.ui.screens.MyNewMusicScreen
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,12 +31,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -52,13 +55,18 @@ import coil.compose.rememberAsyncImagePainter
 import com.gammamusic.R
 import com.gammamusic.domain.model.Playlist
 import com.gammamusic.domain.model.Rating.User
+import com.gammamusic.presentation.sign_in.GoogleAuthUiClient
+
 import com.gammamusic.ui.screens.MyNewMusicScreen.MyProfileScreenViewModel
 import com.gammamusic.ui.screens.RatingScreen.PlaylistChartViewModel
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MyProfileScreen(viewModel: MyProfileScreenViewModel,navController: NavController) {
+fun MyProfileScreen(nav_log:NavController,viewModel: MyProfileScreenViewModel,navController: NavController,googleAuthUiClient: GoogleAuthUiClient) {
     val user by viewModel.user.observeAsState()
+    val coroutine = rememberCoroutineScope()
+    val context = LocalContext.current
     val playlists by viewModel.playlists.observeAsState(emptyList())
     val vviewModel = PlaylistChartViewModel()
     val us:User? = user
@@ -69,11 +77,13 @@ fun MyProfileScreen(viewModel: MyProfileScreenViewModel,navController: NavContro
         Box(modifier = Modifier
             .fillMaxSize()
             .background(color = Color.Black)){
+
             Box(
                 Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.5f)
                     .background(color = Color.Black)){
+
                 Image(painter = rememberAsyncImagePainter(model = us!!.photoUrl) ?:painterResource(id = R.drawable.musium_logo), contentDescription ="", contentScale = ContentScale.Crop, modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight())
@@ -126,6 +136,17 @@ fun MyProfileScreen(viewModel: MyProfileScreenViewModel,navController: NavContro
                             fontSize = 16.sp,
                             lineHeight = 1.1.sp,
                         ))
+                    }
+                    Button(onClick = {
+                        coroutine.launch {
+                            googleAuthUiClient.signOut()
+                            Toast.makeText(context, "Вы вышли из аккаунта", Toast.LENGTH_SHORT).show()
+                            nav_log.navigate("LOGIN")
+
+
+                        }
+                    }) {
+                        Text(text = "Выйти")
                     }
                 }
 
@@ -181,17 +202,20 @@ fun MyProfileCard(
     playlist: Playlist,
     raitcount:Int,
     navController: NavController,
-    viewModel: PlaylistChartViewModel
+    viewModel: PlaylistChartViewModel,
+
 ) {
     Box(modifier = Modifier
         .background(Color.Black)
         .padding(start = 30.dp, top = 20.dp)
     ) {
+
         Column (
-            Modifier.padding(top = 20.dp)
+            Modifier
+                .padding(top = 20.dp)
                 .clickable {
                     val playlistId = playlist.id
-                    viewModel.updatePlaylistRating(playlistId, 15,click = false)
+                    viewModel.updatePlaylistRating(playlistId, 15, click = false)
                     navController.navigate("OpenPbPlayList/${playlistId}")
                 }
         ) {

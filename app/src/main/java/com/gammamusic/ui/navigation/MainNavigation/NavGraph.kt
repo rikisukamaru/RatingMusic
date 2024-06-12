@@ -5,15 +5,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 
 
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 
+
 import com.gammamusic.ui.screens.MyMusicScreen.MyMusicScreen
 import com.example.freelis.ui.screens.MyNewMusicScreen.MyProfileScreen
 import com.example.freelis.ui.screens.RatingScreen.RatingScreen
+import com.gammamusic.presentation.sign_in.GoogleAuthUiClient
+
 import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList.PlayListScreen
 import com.gammamusic.ui.screens.MyMusicScreen.MyPlaylistCollection.PlayList.PlayListViewModel
 import com.gammamusic.ui.screens.MyNewMusicScreen.MyProfileScreenViewModel
@@ -22,7 +26,7 @@ import com.gammamusic.ui.screens.RatingScreen.PublishedPlayList.pbPlayListViewMo
 
 
 @Composable
-fun NavGraph(navHostController: NavHostController) {
+fun NavGraph(nav_login: NavController, navHostController: NavHostController, googleAuthUiClient: GoogleAuthUiClient) {
     Box(modifier = Modifier.fillMaxSize()){
 
         val playListViewModel = PlayListViewModel()
@@ -34,7 +38,7 @@ fun NavGraph(navHostController: NavHostController) {
                 MyMusicScreen(navHostController)
             }
             composable("MyNewMusic"){
-                MyProfileScreen(MyProfileScreenViewModel,navHostController)
+                MyProfileScreen(nav_login,MyProfileScreenViewModel,navHostController,googleAuthUiClient = googleAuthUiClient)
             }
             composable("Rating"){
                 RatingScreen(navHostController)

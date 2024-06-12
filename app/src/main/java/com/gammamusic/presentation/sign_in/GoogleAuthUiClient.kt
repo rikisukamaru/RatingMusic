@@ -7,6 +7,7 @@ import com.gammamusic.R
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.BeginSignInRequest.GoogleIdTokenRequestOptions
 import com.google.android.gms.auth.api.identity.SignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -57,7 +58,10 @@ class GoogleAuthUiClient(
             )
         }
     }
-
+    fun isUserAuthenticated(): Boolean {
+        val account = GoogleSignIn.getLastSignedInAccount(context)
+        return account != null && account.idToken != null
+    }
     suspend fun signOut(){
         try {
             oneTapClient.signOut().await()

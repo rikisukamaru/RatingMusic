@@ -60,7 +60,7 @@ import com.gammamusic.R
 import com.gammamusic.presentation.sign_in.SignInState
 
 @Composable
-fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit) {
+fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit, isUserAuthenticated: () -> Boolean) {
         val context = LocalContext.current
         LaunchedEffect(key1 = state.signInError){
                 state.signInError?.let {
@@ -100,7 +100,7 @@ fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit
                         Column {
                                 Button(
                                         onClick = {
-                                                onSignInClick()
+                                                        onSignInClick()
                                         },
                                         Modifier
                                                 .padding(
@@ -135,7 +135,13 @@ fun Login(navController: NavController,state: SignInState,onSignInClick:()->Unit
                                         )
                                 }
                                 Box(contentAlignment = Alignment.Center) {
-                                        Box(contentAlignment = Alignment.Center,modifier = Modifier.padding(bottom = 35.dp).clickable { navController.navigate("MainScreen") }){
+                                        Box(contentAlignment = Alignment.Center,modifier = Modifier.padding(bottom = 35.dp)
+                                                .clickable {
+                                                        if (isUserAuthenticated()) {
+                                                                navController.navigate("MainScreen")
+                                                        } else {
+                                                                Toast.makeText(context, "Пользователь не авторизован", Toast.LENGTH_LONG).show()
+                                                        }}){
                                                 Image(
                                                         painter = rememberAsyncImagePainter(model = R.drawable.redbutton),
                                                         contentDescription = "",
